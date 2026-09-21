@@ -1,0 +1,19 @@
+{
+  "name": "icloud-agent",
+  "version": "0.1.0",
+  "description": "the missing agentic icloud connection",
+  "author": {
+    "name": "Mark Unthank"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "iCloud Agent",
+    "shortDescription": "the missing agentic icloud connection",
+    "longDescription": "Connect once using an app-specific password stored in your OS credential store. Run mail and calendar tools on demand on your computer.",
+    "developerName": "Mark Unthank",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Use iCloud Agent to help with my email and calendar."
+  },
+  "mcpServers": "./.mcp.json"
+}

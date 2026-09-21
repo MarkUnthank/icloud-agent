@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "icloud-agent": {
+      "command": "icloud-agent",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

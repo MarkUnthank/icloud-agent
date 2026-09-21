@@ -1,0 +1,23 @@
+name: Feature request
+description: Propose a focused improvement to the local connector.
+title: "feat: "
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What are you trying to do?
+      description: Describe the user task and why current tools don't cover it.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior
+      description: Include the desired CLI/agent interaction and any protocol constraints you know.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and scope
+      description: What have you tried? What would a small, complete solution include?

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/MarkUnthank/icloud-agent/security/advisories/new
+    about: Keep credential exposures and exploit details out of public issues.
+  - name: Setup and troubleshooting
+    url: https://github.com/MarkUnthank/icloud-agent/blob/main/docs/troubleshooting.md
+    about: Check common login, keychain, PATH, and protocol errors.

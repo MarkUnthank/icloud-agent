@@ -1,0 +1,5 @@
+{
+  "to": ["person@example.com"],
+  "subject": "Lunch next week",
+  "body": "Would noon on Thursday work for you?"
+}
