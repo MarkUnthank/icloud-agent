@@ -251,6 +251,72 @@ def test_uncertain_send_is_not_retried(draft_transport, tmp_path):
     assert SMTP.sent == 1
 
 
+@pytest.mark.parametrize(
+    "flag,name",
+    [(b"\\Drafts", "Drafts"), (b"\\Sent", "Sent Messages"), (b"\\Trash", "Deleted Messages")],
+)
+def test_special_folder_falls_back_to_exact_icloud_name(flag, name):
+    client = SimpleNamespace(list_folders=lambda: [([], b"/", name)])
+    assert mail.special_folder(client, flag) == name
+
+
+def test_special_folder_prefers_flagged_folder_over_conventional_name():
+    client = SimpleNamespace(
+        list_folders=lambda: [([], b"/", "Drafts"), ([b"\\drafts"], b"/", "Brouillons")]
+    )
+    assert mail.special_folder(client, b"\\Drafts") == "Brouillons"
+
+
+@pytest.mark.parametrize(
+    "folders",
+    [
+        [],
+        [([], b"/", "drafts")],
+        [([], b"/", "Archive/Drafts")],
+        [([b"\\Noselect"], b"/", "Drafts")],
+        [([b"\\Drafts", b"\\Noselect"], b"/", "Remote Drafts"), ([], b"/", "Drafts")],
+        [([b"\\Drafts"], b"/", "One"), ([b"\\Drafts"], b"/", "Two"), ([], b"/", "Drafts")],
+        [([], b"/", "Drafts"), ([], b"/", "Drafts")],
+    ],
+)
+def test_special_folder_rejects_ambiguous_or_nonselectable_matches(folders):
+    with pytest.raises(AgentError):
+        mail.special_folder(SimpleNamespace(list_folders=lambda: folders), b"\\Drafts")
+
+
+def test_create_and_send_with_unflagged_drafts_and_flagged_sent(
+    draft_transport, tmp_path, monkeypatch
+):
+    mailbox, ref, digest = draft_transport
+    monkeypatch.setattr(
+        mailbox,
+        "list_folders",
+        lambda: [([], b"/", "Drafts"), ([b"\\Sent"], b"/", "Sent Messages")],
+    )
+    saved = mail.draft(ACCOUNT, ["recipient@example.com"], "Synthetic draft", "Synthetic body")
+    assert saved["saved"] and mail.decode_ref(saved["id"])[0] == "Drafts"
+    assert mailbox.appended[0][0][0] == "Drafts"
+    result = mail.send_draft(ACCOUNT, ref, digest, tmp_path)
+    assert result["smtp_accepted"] and result["draft_removed"]
+    assert not result["delivery_confirmed"]
+    assert mailbox.appended[1][0][0] == "Sent Messages"
+
+
+def test_smtp_timeout_remains_an_uncertain_send(draft_transport, tmp_path, monkeypatch):
+    _, ref, digest = draft_transport
+
+    def timeout(*args, **kwargs):
+        raise TimeoutError("private SMTP response")
+
+    monkeypatch.setattr(SMTP, "send_message", timeout)
+    with pytest.raises(AgentError) as error:
+        mail.send_draft(ACCOUNT, ref, digest, tmp_path)
+    assert error.value.code == "send_unconfirmed"
+    with pytest.raises(AgentError) as retry:
+        mail.send_draft(ACCOUNT, ref, digest, tmp_path)
+    assert retry.value.code == "already_attempted"
+
+
 def test_calendar_time_rules():
     with pytest.raises(AgentError):
         calendar.parse_time("2026-09-22T10:00:00")

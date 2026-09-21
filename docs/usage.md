@@ -22,10 +22,39 @@ icloud-agent mail search --input - <<'JSON'
 JSON
 ```
 
-Search uses IMAP `TEXT`, not Gmail-style search operators. Results include opaque IDs,
-headers, flags, size, and `next_before_uid`. To get the next page, supply that value as
-`before_uid` with the same folder/query/unread filters. Search returns messages in
-descending UID order. Read a selected message with its entire `id`:
+`query` is literal text searched across headers and body. It does not parse IMAP or
+Gmail expressions: `FROM "Morgan"` searches for those words, not that sender.
+Use dedicated fields to filter unread mail by date, sender, and subject:
+
+```sh
+icloud-agent mail search --input - --json <<'JSON'
+{"unread":true,"since":"2026-09-21","before":"2026-09-22"}
+JSON
+
+icloud-agent mail search --input - --json <<'JSON'
+{"sender":"person@example.com","subject":"invoice","limit":20}
+JSON
+```
+
+All supplied filters combine with AND. `sender` matches a substring in the From header,
+including its display name; prefer the email address when known. `subject` matches
+the Subject header. `since` is inclusive and `before` is exclusive. Both take valid
+YYYY-MM-DD dates; when supplied together, `before` must be later than `since`.
+They filter the server's INTERNALDATE calendar day, ignoring time and timezone,
+as specified by [IMAP](https://www.rfc-editor.org/rfc/rfc9051.html#section-6.4.4).
+They do not filter the sender's Date header or express timezone-aware instant bounds.
+
+Results include opaque IDs, headers, `internal_date`, flags, size, and `next_before_uid`.
+To get the next page, supply that value as `before_uid` with every other filter unchanged.
+`order:"uid_desc"` means most recently added to the folder first. A moved or imported
+message can have a high UID and an old date. Compare `internal_date` or the sender's
+`date` across relevant pages before claiming a message is newest by that date.
+
+An empty successful search applies only to its actual filters and folder. A failed
+search establishes nothing about whether matching messages exist. Use the returned
+error's recovery advice; a narrower date range can help a timed-out search.
+
+Read a selected message with its entire `id` (`mail_read` in MCP or `schema`):
 
 ```sh
 icloud-agent mail read --input - <<'JSON'
@@ -62,6 +91,10 @@ can send from a configured alias during SMTP submission.
 Draft creation saves to iCloud Drafts and returns a draft `id` when Apple provides an
 APPENDUID response. If it returns only `folder` and `message_id`, the draft was saved:
 search that folder for its Message-ID to obtain the ID rather than creating it again.
+
+Drafts and Sent discovery uses the server's special-use flags first. If the relevant
+flag is absent, it accepts the exact iCloud names `Drafts` and `Sent Messages`.
+Ambiguous or non-selectable folders fail before a draft append or SMTP submission.
 
 Read the saved draft with `mail read`, review it, then send using its returned hash:
 
@@ -199,6 +232,9 @@ styling or banners.
 Input validation errors use `error.issues`, containing field paths and messages.
 Unknown fields and coercions such as the string `"true"` for a boolean are rejected.
 Unexpected protocol errors contain a safe type name, not raw server messages or secrets.
+`operation_busy` means the local lock prevented the operation from starting.
+`operation_timeout` includes safe operation/stage diagnostics and recovery advice;
+it does not mean authentication failed. Read back a timed-out write before retrying.
 
 `icloud-agent call mail_search --input FILE` is equivalent to
 `icloud-agent mail search --input FILE`. Use `icloud-agent schema` to discover the live

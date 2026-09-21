@@ -27,8 +27,9 @@ replies, and manage events through a CLI, companion skill, or local MCP connecti
 
 **Runs on your computer. Connect once. Invoke when you need it.**
 
-> **Alpha.** Sign-in, sender discovery, and folder/calendar listing have live read evidence.
-> Writes and client compatibility need further verification. See the [verification record](VERIFICATION.md).
+> **Alpha.** App-password discovery has live evidence; draft and send checks have been
+> reported by a user. Calendar writes, recipient delivery, and client compatibility
+> need further verification. See the [verification record](VERIFICATION.md).
 
 ## Quick start
 
@@ -72,7 +73,6 @@ icloud-agent schema mail_draft
 ```
 
 See [setup](docs/setup.md) for `uv`/`pipx` installation, upgrades, and removal.
-The development branch also includes an experimental [Apple Account and 2FA login](docs/setup.md#try-apple-account-sign-in).
 
 ## What it can do
 

@@ -46,7 +46,7 @@ On macOS or Linux, open a separate terminal window and run:
 
 ```sh
 .venv/bin/python scripts/preview_setup.py app
-.venv/bin/python scripts/preview_setup.py web
+.venv/bin/python scripts/preview_setup.py app-connected
 ```
 
 The preview runs the real prompts with example accounts. Network connections,
@@ -54,11 +54,10 @@ credential storage, browser launches, and changes to your account settings are
 blocked or replaced with fixtures. It clears the preview terminal's scrollback,
 so use a dedicated window.
 
-Use `alex@icloud.com`, app password `abcd-efgh-ijkl-mnop`, any example Apple Account
-password, and verification code `123456`. Enter advances paused service calls;
+Use `alex@icloud.com` and app password `abcd-efgh-ijkl-mnop`. Enter advances paused service calls;
 Space and arrow keys work as usual in pickers. Ctrl-C exits the final screen.
-Run `scripts/preview_setup.py --help` for saved-session, SMS, empty-calendar,
-configuration, status, and failure scenarios. These previews verify presentation,
+Run `scripts/preview_setup.py --help` for empty-calendar, configuration, skill-installation,
+and failure scenarios. These previews verify presentation,
 not Apple's live responses.
 
 ## Changes that fit this project

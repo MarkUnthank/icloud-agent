@@ -68,7 +68,7 @@ def ask(out, label, default=None, *, password=False):
     return out.input(prompt).strip() or default or ""
 
 
-def password_input(out, prompt, *, strip=True):
+def password_input(out, prompt):
     from prompt_toolkit import PromptSession
     from prompt_toolkit.clipboard import DummyClipboard
     from prompt_toolkit.history import DummyHistory
@@ -83,7 +83,7 @@ def password_input(out, prompt, *, strip=True):
     def paste(event):
         # A copied trailing return is data, never a submit key or the next answer.
         # Keep internal whitespace intact so password validation can reject it.
-        event.current_buffer.insert_text(event.data.strip() if strip else event.data)
+        event.current_buffer.insert_text(event.data.strip())
 
     session = PromptSession(
         is_password=True,
@@ -93,8 +93,7 @@ def password_input(out, prompt, *, strip=True):
         output=create_output(stdout=out.file),
         color_depth=ColorDepth.DEPTH_1_BIT if "NO_COLOR" in os.environ else None,
     )
-    value = session.prompt(prompt.plain)
-    return value.strip() if strip else value
+    return session.prompt(prompt.plain).strip()
 
 
 def progress(out, message):
@@ -129,11 +128,11 @@ def value_view(value):
     return Text(literal(value), overflow="fold")
 
 
-def connected(out, email, *, web=False):
+def connected(out, email):
     content = Text.assemble(
         ("✓  Connected to iCloud", "success_bold"),
         ("\n\n" + literal(email)),
-        ("\nApple Account session saved." if web else "\nMail and Calendar are ready.", "muted"),
+        ("\nMail and Calendar are ready.", "muted"),
     )
     out.print()
     out.print(
@@ -148,29 +147,6 @@ def connected(out, email, *, web=False):
             (0, 2),
         )
     )
-    if web:
-        out.print()
-        out.print(Text("  Next: icloud-agent auth web-check", style="muted"))
-    out.print()
-
-
-def web_check(out, data):
-    heading(out, "connection")
-    out.print(Text("  ✓ Apple Account connected", style="success_bold"))
-    for key, name in (("aliases", "Sender addresses"), ("mailboxes", "Mail folders")):
-        check = data["checks"][key]
-        if not check["ok"]:
-            out.print(Text(f"  × {name}: " + literal(check["message"]), style="failure"))
-            continue
-        out.print(Text(f"  ✓ {name} · {check['count']}", style="success"))
-    aliases = data["checks"]["aliases"]
-    if aliases["ok"]:
-        out.print()
-        for address in aliases["addresses"]:
-            line = Text("    " + literal(address))
-            if address == aliases["default_sender"]:
-                line.append("  ← iCloud default", style="accent")
-            out.print(line)
     out.print()
 
 
@@ -187,6 +163,15 @@ def result(out, payload, args):
         for issue in error.get("issues", []):
             field = ".".join(str(x) for x in issue["field"])
             out.print(Padding(Text(literal(f"{field}: {issue['message']}")), (0, 2)))
+        if error.get("operation") and error.get("stage"):
+            out.print(
+                Padding(
+                    Text(literal(f"{error['operation']} · {error['stage']}"), style="muted"),
+                    (1, 2, 0, 2),
+                )
+            )
+        if error.get("recovery"):
+            out.print(Padding(Text(literal(error["recovery"])), (1, 2, 0, 2)))
         out.print()
         return
     data = payload["data"]
@@ -197,12 +182,6 @@ def result(out, payload, args):
         return
     action = getattr(args, "action", None)
     if args.command == "auth":
-        if action == "web-check":
-            web_check(out, data)
-            return
-        if action == "web-login":
-            connected(out, data["email"], web=True)
-            return
         if action == "login":
             connected(out, data["mail_address"])
             return

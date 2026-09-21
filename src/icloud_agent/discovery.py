@@ -1,9 +1,8 @@
-"""Read calendars and sender identities, using a saved web session when available."""
+"""Read account identities and calendars using the app-specific password."""
 
 from urllib.parse import unquote, urlsplit
 
 from caldav.elements import cdav
-from keyring.errors import KeyringError
 
 from . import calendar, mail
 from .errors import AgentError
@@ -42,13 +41,4 @@ def account_resources(account):
                 for item in principal.calendars()
             ],
         }
-    from . import web_mail
-
-    try:
-        senders = web_mail.optional_senders(account.apple_account)
-    except (AgentError, KeyringError):
-        senders = None
-    if senders is not None:
-        resources["addresses"] = senders["addresses"]
-        resources["address_source"] = "icloud_mail"
     return resources

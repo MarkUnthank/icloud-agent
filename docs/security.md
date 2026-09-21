@@ -5,8 +5,7 @@
 ## Data path
 
 Your local CLI/MCP process connects directly to Apple's IMAP, SMTP, and CalDAV services
-over TLS. The experimental web login also connects to Apple's authentication and
-iCloud web services. The project operates no proxy, has no telemetry, and makes no OpenAI API
+over TLS. The project operates no proxy, has no telemetry, and makes no OpenAI API
 calls itself. Installing/updating the Python package contacts package registries; a
 login may open Apple's account page in your default browser.
 
@@ -19,17 +18,8 @@ data handling. Local execution does not make the model or conversation offline.
 Authentication uses an Apple app-specific password saved through an explicitly selected
 native backend: macOS Keychain, Windows Credential Manager, or Linux Secret Service.
 There is no plaintext keyring fallback, password argument, environment-variable login,
-browser-cookie extraction, or hidden main-account password storage. The credential is
+browser-cookie extraction, or main-account password login. The credential is
 available in process memory while making requests to Apple.
-
-The separate `auth web-login` experiment accepts your main Apple Account password and
-2FA code in a masked terminal prompt. Neither is persisted. Session tokens and cookies
-are stored under the native credential service `icloud-agent-web`; automatic plaintext
-cookie/session files are disabled. This is an Apple web session, whose underlying
-authority can extend beyond this tool's two read-only Mail checks. It is not an Apple-issued
-Mail-only or read-only token. The experiment is not exposed through MCP and does not
-change the standard operations' app-password authentication or selection policy.
-See [the authentication design](authentication-design.md#apple-account-web-session-experiment).
 
 The OS may prompt to unlock or allow access to its credential store. Any process
 running with equivalent access under your account may still be able to use the same
@@ -74,7 +64,6 @@ cached by the tool. Your client, shell redirection, or input JSON files may stor
 separately. Delete sensitive input/output files when you no longer need them.
 
 `auth logout` removes the active config and keychain credential but retains the journal.
-If you tried web login, run `auth web-logout` separately to remove that session too.
 Removing the journal removes duplicate-attempt protection. To remove the integration
 completely, follow [removal instructions](setup.md#remove) and revoke the app-specific
 password at Apple.

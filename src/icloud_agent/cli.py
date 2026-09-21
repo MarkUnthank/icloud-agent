@@ -229,7 +229,7 @@ def parser():
     commands = p.add_subparsers(dest="command", required=True)
     a = commands.add_parser("auth", help="Save, check, or remove OS-stored credentials.")
     auth_commands = a.add_subparsers(dest="action", required=True)
-    auth_commands.add_parser("login", help="Connect your Apple Account.").add_argument(
+    auth_commands.add_parser("login", help="Connect with an app-specific password.").add_argument(
         "--no-browser", action="store_true"
     )
     auth_commands.add_parser("status", help="Check saved credentials or live access.").add_argument(
@@ -237,10 +237,6 @@ def parser():
     )
     auth_commands.add_parser("configure", help="Choose enabled senders and calendars.")
     auth_commands.add_parser("logout", help="Remove the app-password connection.")
-    auth_commands.add_parser("web-login", help="Sign in with your Apple Account and 2FA.")
-    auth_commands.add_parser("web-status", help="Check the saved iCloud web session.")
-    auth_commands.add_parser("web-check", help="Probe read-only Mail access with the web session.")
-    auth_commands.add_parser("web-logout", help="Remove the saved local web session.")
     setup_parser = commands.add_parser("setup", help="Install bundled agent integration.")
     setup_parser.add_argument(
         "--codex", action="store_true", help="Register MCP and install the Codex skill."
@@ -330,16 +326,7 @@ def main():
                 "data": setup(codex=args.codex, skills=args.skills, agents=agents, copy=args.copy),
             }
         elif args.command == "auth":
-            if args.action.startswith("web-"):
-                from . import web_login, web_session
-
-                data = {
-                    "web-login": web_login.login,
-                    "web-status": web_session.status,
-                    "web-check": web_session.probe,
-                    "web-logout": web_session.logout,
-                }[args.action]()
-            elif args.action == "login":
+            if args.action == "login":
                 data = login(args.no_browser)
             elif args.action == "configure":
                 data = configure()
@@ -404,7 +391,7 @@ def main():
             result["ok"]
             and sys.stdin.isatty()
             and args.command == "auth"
-            and args.action in ("login", "web-login")
+            and args.action == "login"
         ):
             agent_skills.offer(terminal.console(stderr=True))
     if not result["ok"]:

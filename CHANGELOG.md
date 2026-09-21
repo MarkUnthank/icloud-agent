@@ -6,17 +6,20 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Use app-specific-password setup only. Remove the experimental Apple Account
+  password/2FA commands and web-session dependency. Keep address discovery through CalDAV.
+- Add `sender`, `subject`, `since`, and `before` filters to mail search. Define `query`
+  as literal text; return `internal_date` and the explicit `uid_desc` ordering.
+- Distinguish a busy local operation, a network timeout, and rejected Mail credentials.
+  Include safe operation/stage diagnostics and recovery guidance without server responses.
+- Discover unflagged special folders by exact iCloud names when no special-use flag
+  exists. Prefer flags and reject ambiguous or non-selectable folders.
 - Offer **Install agent skills** after login. Install the bundled skill in
   `~/.agents/skills/icloud-agent` with optional agent links, following the Skills CLI's
   global layout without invoking it or requiring Node/npm. Add `setup --skills`,
   repeatable `--agent` selection, and `--copy`; migrate the old managed Codex copy.
-- Add experimental Apple Account sign-in with device/SMS 2FA, a reusable session in
-  the native credential store, and live-verified sender discovery and Mail folder checks.
-  Setup uses the web alias inventory when available; standard Mail/Calendar operations
-  still use the app-specific password.
-- Celebrate successful sign-in with a connected card; show sender addresses and the
-  iCloud default directly in `auth web-check`.
-- Add breathing room around password and verification prompts, sender selection,
+- Celebrate successful sign-in with a connected card.
+- Add breathing room around password prompts, sender selection,
   calendar summaries, and the connection card's next step. Include an isolated
   setup preview for reviewing the real terminal UI with example accounts.
 

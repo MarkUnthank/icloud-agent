@@ -44,10 +44,6 @@ def generate():
         "| `auth status [--check]` | Local credential presence; optionally live IMAP/CalDAV checks. |",
         "| `auth configure` | Reload addresses/calendars and choose enabled resources. |",
         "| `auth logout` | Remove active local credential and account config. |",
-        "| `auth web-login` | Experimental interactive Apple Account password and device/SMS 2FA. |",
-        "| `auth web-status` | Validate the separate saved web session against Apple. |",
-        "| `auth web-check` | Diagnostic read-only alias and Mail folder requests. |",
-        "| `auth web-logout` | Remove this tool's local web session. |",
         "| `schema [OPERATION]` | Describe operation inputs without authentication. |",
         "| `mcp` | Start a local stdio MCP process. |",
         "| `--version` / `--help` | Human-readable version/help. |",
@@ -76,7 +72,10 @@ def generate():
         if not fields:
             lines += ["Input: `{}`."]
             continue
-        lines += ["| Field | Type | Required | Default | Constraints |", "|---|---|---|---|---|"]
+        lines += [
+            "| Field | Type | Required | Default | Meaning and constraints |",
+            "|---|---|---|---|---|",
+        ]
         schema = schemas[name]["input_schema"]
         for field_name, model_field in fields.items():
             field = schema["properties"][field_name]
@@ -100,7 +99,9 @@ def generate():
                 if required
                 else "`" + json.dumps(model_field.get_default(call_default_factory=True)) + "`"
             )
-            constraint = "; ".join(f"{k}: `{v}`" for k, v in constraints.items()) or "—"
+            constraint = field.get("description", "")
+            limits = "; ".join(f"{k}: `{v}`" for k, v in constraints.items())
+            constraint = "; ".join(value for value in (constraint, limits) if value) or "—"
             lines.append(
                 f"| `{field_name}` | {type_label(field)} | {'Yes' if required else 'No'} | {default} | {constraint} |"
             )

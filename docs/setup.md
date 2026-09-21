@@ -58,7 +58,7 @@ your terminal. See [agent setup](clients.md) for other MCP clients.
 
 ### Install agent skills
 
-Both `auth login` and `auth web-login` finish with **Install agent skills** and **Finish**
+`auth login` finishes with **Install agent skills** and **Finish**
 options. Choosing Finish, cancelling, or encountering a skill-installation error leaves
 the successful iCloud login saved. The optional prompt is omitted for JSON/piped output.
 
@@ -124,8 +124,6 @@ login email to authenticate. Enabled aliases can be used as senders.
 Address discovery reads the account's CalDAV `calendar-user-address-set` using the
 same app-specific password. This includes iCloud aliases and custom-domain addresses
 on the account tested, but is a calendar identity list, not an SMTP permission check.
-If you have also used `auth web-login` for this account, setup reads the Mail alias list
-through that session instead. An expired or unavailable web session falls back to CalDAV.
 Only select addresses you use with iCloud Mail. Apple checks sending permission during
 SMTP submission; login does not send a verification message. If Apple omits an address,
 you can add it in the picker. No browser session or second password is needed for discovery.
@@ -160,34 +158,6 @@ Local logout does not revoke the password at Apple. Revoke it at
 [account.apple.com](https://account.apple.com/) to invalidate it remotely. Never paste
 credentials into a support issue, chat, shell argument, or agent-captured terminal.
 
-## Try Apple Account sign-in
-
-The development build includes a separate web-session experiment:
-
-```sh
-icloud-agent auth web-login   # normal Apple Account password, then device/SMS 2FA
-icloud-agent auth web-status  # validate the saved session with Apple
-icloud-agent auth web-check   # show discovered sender addresses and Mail folder count
-icloud-agent auth web-logout  # remove this local web session
-```
-
-Run sign-in yourself in a normal terminal. Enter your usual Apple Account password,
-not an app-specific password. Both the password and verification code are masked and
-remain in memory only. The reusable session is saved in the native OS credential
-store. Subsequent sign-ins check that session first. Apple may expire or revoke it.
-
-This experiment is separate from `auth login`: normal Mail/Calendar operations still
-use the app-specific password and your existing access selections. `web-check` lists
-active addresses and the iCloud default sender, then checks Mail folder access.
-`auth configure` uses these addresses in its picker when this session is valid.
-Discovery does not change which senders you have enabled locally.
-These reads have been verified on one real account; they read no message bodies and
-perform no Mail or Calendar writes. Security-key and
-legacy two-step sign-in are not supported. See [authentication design](authentication-design.md).
-
-`web-logout` removes only this tool's local web session. It does not sign out other
-Apple devices, revoke sessions at Apple, or remove the app-specific password.
-
 ## Upgrade
 
 ```sh
@@ -216,7 +186,6 @@ it may shadow the Homebrew command. You can then remove the old application-data
 
 First run `icloud-agent auth logout` while the executable is still present, then
 revoke its app-specific password at Apple if you want remote revocation too.
-If you tried web login, also run `icloud-agent auth web-logout` to remove that saved session.
 
 For an installation made with `--codex`:
 
