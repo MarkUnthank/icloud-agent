@@ -47,7 +47,9 @@ talks directly to Apple.
 | **Calendar** | Check your schedule, find recurring occurrences, and create, edit, or delete personal events in enabled calendars | No recurrence editing, invitations, or RSVP management |
 
 Searching and reading leave unread messages unread. Drafting saves a message without
-sending it. See [usage](docs/usage.md) for the full workflows.
+sending it. When you ask to add an event without naming a calendar, the companion
+skill tells your agent to ask which one to use. See [usage](docs/usage.md) for the
+full workflows.
 
 ## Will it work with my agent?
 
@@ -81,18 +83,24 @@ icloud-agent auth login
 You need an iCloud Mail account, Apple Account two-factor authentication, and Codex
 on PATH for `setup --codex`.
 
-Follow the login prompts to generate an Apple **app-specific password** and save it
-in your OS credential store. **Enter it in your terminal, never in chat.**
+Login opens Apple's sign-in page, where you generate an **app-specific password**.
+Paste it into the terminal's masked prompt; the CLI saves it in your OS credential
+store for future use. **Never enter passwords in chat.**
 
 Addresses and calendars load from iCloud automatically. Choose enabled senders and
-calendars with **Space** and **Enter**. Pick your default sender and confirm the
-sender name. Setup prefills
-**Sender name** from iCloud when available; press Enter to keep it or type another
-name. Change your choices later with `icloud-agent auth configure`.
+calendars with **Space** and **Enter**. Your default sender can be an alias different
+from your login email. If an address is missing, choose **Add another address…**.
+**Sender name** is prefilled from iCloud when available; keep it or edit it to choose
+the name recipients see. Change these settings later with `icloud-agent auth configure`.
 
-Login also offers to install the companion skill for your agents. You can run
-`icloud-agent setup --skills` later. Restart your agent after setup, then try one of
-the requests above.
+Once connected, choose **Install agent skills** or **Finish**. Skill installation
+includes the shared skill for Codex and other compatible agents, with optional links
+for agents such as Claude Code and Windsurf. Extras start unchecked, with a live
+selection count at the top. Press **Space** to toggle them, or **Enter** with zero
+selected to skip extras and install only the shared skill.
+
+You can install or update skills later with `icloud-agent setup --skills`.
+Restart your agent after setup, then try one of the requests above.
 
 Or use the CLI directly:
 
