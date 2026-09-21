@@ -1,0 +1,140 @@
+src/icloud_agent/discovery.py
+  s_6fe6e02598edf3::t_1a58e6eee4535c 1,6,38,45-54
+tests/test_terminal.py
+  s_6fe6e02598edf3::t_2f8d6cec3fad3f 67-80,115-116
+  s_6fe6e02598edf3::t_650378f494e9bf 298,300-304
+  s_6fe6e02598edf3::t_3e0245ef2c656f 15,81-114
+  s_6fe6e02598edf3::t_0f54187745588e 117-120,305,308,327,338-339
+tests/test_agent_skills.py
+  s_6fe6e02598edf3::t_c62ace458a8e42 1-31,36-46,51-66,71-98,102-135,143-148,152-160,164
+  s_6fe6e02598edf3::t_f37e2fa5ef2d3f 32-35,47-50,67-70,99-101,136-142,149-151,161-163
+src/icloud_agent/web_session.py
+  s_6fe6e02598edf3::t_1a58e6eee4535c 124-126,211-213,220,222
+  s_6fe6e02598edf3::t_cacc2cc8a0fd13 12-15,17,23-30,35-47,82-83,88-90,114-117,122-123,127-139,143-144,147-151,153,163-168,172-181
+  s_6fe6e02598edf3::t_abaa0131351841 1-11,16,18-22,31-34,48-81,84-87,91-113,118-121,140-142,145-146,152,154-162,169-171,182-210,214-219,221,223-226
+  s_6fe6e02598edf3::t_d1e78f2fd0c6c4 227-229
+scripts/generate_reference.py
+  s_6fe6e02598edf3::t_3a43d95588ed79 42
+  s_6fe6e02598edf3::t_a695d1ddc61cf2 45,47-50
+tests/test_web_auth.py
+  s_6fe6e02598edf3::t_e7a24618c3702f 152-157,346-356,361-384
+  s_6fe6e02598edf3::t_15981d4d8abf99 1-3,5-14,16-44,48-63,67-82,86-109,119-124,135-151,158-187,191-196,247-249,256-259,262-268,271,273-277,284-285,293-314,318-324,328-333,337-345,385-422,426-430
+  s_6fe6e02598edf3::t_b892c8320e0010 15,197-246,260-261,269-270,272,278-283,286-292,357-360
+  s_6fe6e02598edf3::t_650378f494e9bf 4,45-47,64-66,83-85,110-118,125-134,188-190,250-255,315-317,325-327,334-336,423-425
+  s_6fe6e02598edf3::t_ce9fdc862e11bb 431-455
+tests/test_installer.py
+  s_6fe6e02598edf3::t_3a43d95588ed79 6-7,23-27,32-34,43-46
+  s_6fe6e02598edf3::t_6738b431050c51 47-51,54
+docs/clients.md
+  s_6fe6e02598edf3::t_3a43d95588ed79 16-18,37-38,77-82
+docs/architecture.md
+  s_6fe6e02598edf3::t_3a43d95588ed79 29-30,70-76
+  s_6fe6e02598edf3::t_142b011ad7a482 77
+VERIFICATION.md
+  s_6fe6e02598edf3::t_08e75c66906b5f 20
+  s_6fe6e02598edf3::t_a6990b86785160 24,26-36
+  s_6fe6e02598edf3::t_59b8bcd0fd3a1d 37
+  s_6fe6e02598edf3::t_f86ddbb7fb1584 21-22,25
+  s_6fe6e02598edf3::t_2c509a4ca604f2 23,38-45,49-56,98-99
+  s_6fe6e02598edf3::t_2f8d6cec3fad3f 46-48
+docs/troubleshooting.md
+  s_6fe6e02598edf3::t_a695d1ddc61cf2 31-37
+src/icloud_agent/setup.py
+  s_6fe6e02598edf3::t_90053b57f6c527 12-13,30,33-35,40,47,49,53-54,64,74,80-81
+docs/security.md
+  s_6fe6e02598edf3::t_3a43d95588ed79 59-65
+  s_6fe6e02598edf3::t_a695d1ddc61cf2 8-9,25-33,77
+CHANGELOG.md
+  s_6fe6e02598edf3::t_2c509a4ca604f2 14-18
+  s_6fe6e02598edf3::t_2a55dacec73c5a 19-21
+  s_6fe6e02598edf3::t_3a43d95588ed79 9-12
+  s_6fe6e02598edf3::t_8471f3728ac7d2 13,22
+pyproject.toml
+  s_6fe6e02598edf3::t_abaa0131351841 28
+src/icloud_agent/cli.py
+  s_6fe6e02598edf3::t_db64cd0a1928a3 105,111,117,124,152
+  s_6fe6e02598edf3::t_90053b57f6c527 11,248-259,315-320
+  s_6fe6e02598edf3::t_f86ddbb7fb1584 239
+  s_6fe6e02598edf3::t_47750d903dd457 240-243,322-331,342
+  s_6fe6e02598edf3::t_723fc411b1f16b 321,333-341,403-409
+src/icloud_agent/agent_skills.py
+  s_6fe6e02598edf3::t_90053b57f6c527 1-20,22-28,40-99,101-103,105-106,113-171,175-195,197-207,209-218,220-233
+  s_6fe6e02598edf3::t_59b8bcd0fd3a1d 110-112,219
+  s_6fe6e02598edf3::t_c62ace458a8e42 21,29-39,100,104,172-174,196
+  s_6fe6e02598edf3::t_f37e2fa5ef2d3f 107-109,208
+tests/test_discovery.py
+  s_6fe6e02598edf3::t_b892c8320e0010 8,40,56,63-71
+  s_6fe6e02598edf3::t_bdcf3c3ae301dc 72-84
+docs/authentication-design.md
+  s_6fe6e02598edf3::t_a695d1ddc61cf2 10,45,50-71,80-81,86-87,121-122
+  s_6fe6e02598edf3::t_2c509a4ca604f2 39-44,46-49,72-79,82-85,88-89
+src/icloud_agent/resources/plugin/skills/icloud-agent/SKILL.md
+  s_6fe6e02598edf3::t_2c509a4ca604f2 20-24
+  s_6fe6e02598edf3::t_e1dbed323d6d72 18-19,25
+src/icloud_agent/web_login.py
+  s_6fe6e02598edf3::t_f86ddbb7fb1584 77-81
+  s_6fe6e02598edf3::t_cacc2cc8a0fd13 3,14-16,22-24,41-43,57-60,63-66
+  s_6fe6e02598edf3::t_db64cd0a1928a3 34,48,82-84,89,91,102
+  s_6fe6e02598edf3::t_47750d903dd457 1-2,4-13,17-21,25-33,35-40,44-47,49-56,61-62,67-76,85-88,90,92-101,103
+install.py
+  s_6fe6e02598edf3::t_c62ace458a8e42 54
+src/icloud_agent/web_mail.py
+  s_6fe6e02598edf3::t_1a58e6eee4535c 1-145
+  s_6fe6e02598edf3::t_7325e1b324ab82 146-150
+docs/setup.md
+  s_6fe6e02598edf3::t_2c509a4ca604f2 127-128,170,180-185
+  s_6fe6e02598edf3::t_3a43d95588ed79 47-48,59-93,119,227-229
+  s_6fe6e02598edf3::t_e1dbed323d6d72 219
+  s_6fe6e02598edf3::t_a695d1ddc61cf2 163-169,171-179,186-190
+scripts/preview_setup.py
+  s_6fe6e02598edf3::t_eff5341eb486c2 1-26,28-30,41-63,89-93,97-113,118,123-125,129-140,145-150,155-164,171,181-183,187-190,214-215,233-234,239-268
+  s_6fe6e02598edf3::t_3e0245ef2c656f 27,31-40,64-88,94-96,114-117,119-122,126-128,141-144,151-154,165-170,172-180,184-186,191-213,216-232,235-238
+  s_d1ff3d2a31ee18::t_c9870d51c73a6c 269-283
+tests/test_setup.py
+  s_6fe6e02598edf3::t_c62ace458a8e42 7,13,36-38,79-94
+  s_6fe6e02598edf3::t_3a43d95588ed79 14-15
+  s_6fe6e02598edf3::t_08e4930b1c57c9 95-96
+src/icloud_agent/terminal.py
+  s_6fe6e02598edf3::t_abaa0131351841 71,86,96-97
+  s_6fe6e02598edf3::t_cacc2cc8a0fd13 203,205
+  s_6fe6e02598edf3::t_db64cd0a1928a3 152
+  s_6fe6e02598edf3::t_2b3c2eb716f299 132-133,135-142,144-151,153-156,204,207
+  s_6fe6e02598edf3::t_2f7bd3c87d35f6 228-229,240-241
+  s_6fe6e02598edf3::t_90053b57f6c527 235-238
+  s_6fe6e02598edf3::t_9a8e8f5b0bcd8f 17-27,52,134,143,159,181,220
+  s_6fe6e02598edf3::t_893ae13c69db7a 157-158,160-176,200-202
+  s_6fe6e02598edf3::t_f37e2fa5ef2d3f 193-197
+CONTRIBUTING.md
+  s_6fe6e02598edf3::t_2a55dacec73c5a 43-63
+README.md
+  s_6fe6e02598edf3::t_3a43d95588ed79 54-57
+  s_6fe6e02598edf3::t_2f8d6cec3fad3f 14
+  s_6fe6e02598edf3::t_2c509a4ca604f2 30-31
+  s_6fe6e02598edf3::t_f86ddbb7fb1584 75
+docs/reference.md
+  s_6fe6e02598edf3::t_3cd323ec781354 20,23,25-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "24258b46a7be86f791e7ba8a83dabaacec8cab85",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    },
+    "s_d1ff3d2a31ee18": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c2d9-6820-7fb2-bfd7-84a2c08c55d2",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
