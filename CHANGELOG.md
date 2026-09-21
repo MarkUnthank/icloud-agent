@@ -6,6 +6,7 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Trim repeated README and setup copy. Keep write-retry guidance on write failures.
 - Mark the project as beta in the README and package metadata; retain the documented
   live verification limits.
 - Start optional agent selections unchecked. Show a live selection count above the

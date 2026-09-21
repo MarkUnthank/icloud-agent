@@ -186,12 +186,11 @@ def install(agents=(), *, copy=False):
 
 def choose_agents(out):
     terminal.heading(out, "agent skills")
-    out.print("  Shared · Codex, Cursor, Gemini CLI, OpenCode", style="accent")
-    out.print("  " + terminal.literal(canonical_path()), style="muted")
+    out.print("  Included · Codex, Cursor, Gemini CLI, OpenCode", style="accent")
     out.print()
     return terminal.choose(
         out,
-        "Also install for",
+        "Additional agents",
         [(name, key) for key, name in LINKED_AGENTS.items()],
         [],
         optional=True,
@@ -207,7 +206,7 @@ def installed(out, result):
         if mode == "copy":
             out.print("    Copy · update with setup --skills", style="muted")
     out.print()
-    out.print("  Start a new agent session to load the skill.", style="muted")
+    out.print("  Start a new agent session.", style="muted")
     out.print()
 
 
