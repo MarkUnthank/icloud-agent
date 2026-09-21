@@ -1,0 +1,19 @@
+src/icloud_agent/terminal.py
+  s_6fe6e02598edf3::t_8708b22f43ec13 256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ce0a5ba7c7e00df57b8cff4985565a6b3b4fe006",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
