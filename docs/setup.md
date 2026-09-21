@@ -51,7 +51,7 @@ invoke the command through its stable Homebrew `bin` or `opt` path, not a versio
 Cellar path. Rerun setup after changing installation method.
 
 `icloud-agent setup` without flags exports the bundled desktop plugin and prints its
-path as JSON. On macOS it is `~/Library/Application Support/icloud-agent/plugin/icloud-agent`.
+path. Add `--json` for machine-readable output. On macOS it is `~/Library/Application Support/icloud-agent/plugin/icloud-agent`.
 No service is installed. Setup does not authenticate; login happens separately in
 your terminal. See [agent setup](clients.md) for other MCP clients.
 
@@ -66,11 +66,11 @@ Run this yourself in a normal terminal:
 icloud-agent auth login
 ```
 
-1. In the Apple page that opens, go to **Sign-In and Security → App-Specific Passwords**.
-2. Generate a password named `icloud-agent`.
-3. In the terminal, enter your Apple Account email.
-4. Enter the iCloud Mail address you use to sign into IMAP. This may differ from the
-   Apple Account email. The CLI defaults it to the Apple Account email.
+1. Enter your Apple Account email in the terminal.
+2. Enter the iCloud Mail address you use to sign into IMAP. This may differ from the
+   Apple Account email. Press Enter to use the default.
+3. In the Apple page that opens, go to **Sign-In and Security → App-Specific Passwords**.
+4. Generate a password named `icloud-agent`.
 5. Paste the app-specific password into the hidden prompt.
 
 The CLI validates IMAP and CalDAV before saving credentials. It does not send a test

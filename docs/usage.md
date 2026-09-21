@@ -163,9 +163,22 @@ Successful writes report whether readback was verified. A successful write with
 
 ## Output and exit codes
 
-Operations return a JSON envelope on stdout. Successful calls exit 0, failed calls
-exit 1, and command-line usage errors exit 2. Help/version and interactive login
-prompts are human-oriented. MCP uses JSON-RPC on stdout instead of the CLI envelope stream.
+In a terminal, results use readable labels, grouped records, and color. Set `NO_COLOR=1`
+to disable color. Long values wrap; message bodies are displayed as text, not markup.
+
+When stdout is piped or redirected, commands return a JSON envelope automatically.
+Agents and scripts should pass `--json` explicitly, including when using a terminal:
+
+```sh
+icloud-agent --json auth status
+icloud-agent mail search --json
+icloud-agent mail search | jq '.data.messages'
+```
+
+Successful calls exit 0, failed calls exit 1, and command-line usage errors exit 2.
+Interactive login prompts and progress go to stderr, keeping JSON stdout parseable.
+Help/version remain human-oriented. MCP uses JSON-RPC on stdout and never adds terminal
+styling or banners.
 
 ```json
 {"ok":true,"data":{"example":"operation-specific result"}}

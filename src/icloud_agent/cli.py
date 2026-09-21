@@ -1,5 +1,4 @@
 import argparse
-import getpass
 import json
 import logging
 import re
@@ -7,7 +6,9 @@ import sys
 import webbrowser
 from pathlib import Path
 
-from . import __version__, auth, calendar, mail
+from rich_argparse import RawDescriptionRichHelpFormatter
+
+from . import __version__, auth, calendar, mail, terminal
 from .errors import AgentError, error_result
 from .operations import OPERATIONS, invoke
 
@@ -26,33 +27,42 @@ def login(no_browser=False):
     if not sys.stdin.isatty():
         raise AgentError(
             "interactive_login_required",
-            "Run icloud-agent auth login directly in your "
-            "terminal. Passwords are never accepted as arguments or through chat.",
+            "Run icloud-agent auth login directly in your terminal. "
+            "Passwords are never accepted as arguments or through chat.",
         )
-    print(
-        "Connect iCloud Mail and Calendar once. Your password stays in your OS credential store.",
-        file=sys.stderr,
-    )
-    print(
-        "At account.apple.com: Sign-In and Security → App-Specific Passwords → Generate.\n"
-        "Name it 'icloud-agent'. Two-factor authentication must be enabled.",
-        file=sys.stderr,
-    )
+    out = terminal.console(stderr=True)
+    terminal.heading(out, "connect")
+    terminal.section(out, "1", "Your account")
+
+    def email(label, default=None):
+        while True:
+            value = terminal.ask(out, label, default)
+            try:
+                mail.recipients([value])
+                return value
+            except AgentError:
+                out.print("  Enter a valid email address.", style="failure")
+
+    apple_account = email("Apple Account")
+    mail_address = email("iCloud Mail", apple_account)
+    out.print()
+    terminal.section(out, "2", "App-specific password")
+    out.print("  account.apple.com", style="accent")
+    out.print("  Sign-In and Security → App-Specific Passwords")
+    out.print('  Generate a password named "icloud-agent".', style="muted")
+    out.print("  Requires Apple Account two-factor authentication.\n", style="muted")
     if not no_browser:
         webbrowser.open("https://account.apple.com/account/manage")
-    apple_account = input("Apple Account email: ").strip()
-    mail_address = input(f"iCloud Mail address [{apple_account}]: ").strip() or apple_account
-    mail.recipients([apple_account, mail_address])
-    password = getpass.getpass("App-specific password (hidden): ").strip()
-    if not re.fullmatch(r"[a-zA-Z]{4}(?:-[a-zA-Z]{4}){3}", password):
-        raise AgentError(
-            "invalid_password_format",
-            "Use Apple's app-specific password in "
-            "xxxx-xxxx-xxxx-xxxx format, not your normal Apple Account password.",
-        )
+    out.print("  Saved in your OS credential store.", style="muted")
+    while True:
+        password = terminal.ask(out, "Password (hidden)", password=True)
+        if re.fullmatch(r"[a-zA-Z]{4}(?:-[a-zA-Z]{4}){3}", password):
+            break
+        out.print("  Use the app-specific password: xxxx-xxxx-xxxx-xxxx", style="failure")
     account = auth.Account(apple_account, mail_address, password)
-    print("Checking Mail and Calendar…", file=sys.stderr)
-    check_account(account)
+    out.print()
+    with terminal.progress(out, "Checking Mail and Calendar…"):
+        check_account(account)
     with auth.operation_lock():
         auth.save(account)
     return {
@@ -65,17 +75,57 @@ def login(no_browser=False):
     }
 
 
+class HelpFormatter(RawDescriptionRichHelpFormatter):
+    styles = {
+        **RawDescriptionRichHelpFormatter.styles,
+        "argparse.groups": "bold cyan",
+        "argparse.prog": "bold cyan",
+    }
+
+    def __init__(self, prog):
+        super().__init__(prog, console=terminal.console())
+
+
+class ArgumentParser(argparse.ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("formatter_class", HelpFormatter)
+        super().__init__(*args, **kwargs)
+        self.add_argument(
+            "--json",
+            action="store_true",
+            default=argparse.SUPPRESS,
+            help="Emit JSON, including in a terminal. Automatic when stdout is piped.",
+        )
+
+    def error(self, message):
+        payload = error_result(AgentError("invalid_arguments", terminal.literal(message)))
+        if "--json" in sys.argv or not sys.stdout.isatty():
+            emit(payload)
+        else:
+            from types import SimpleNamespace
+
+            terminal.result(terminal.console(stderr=True), payload, SimpleNamespace())
+        self.exit(2)
+
+
 def parser():
-    p = argparse.ArgumentParser(
-        description="Local iCloud Mail and Calendar. Output is always JSON."
+    p = ArgumentParser(
+        prog="icloud-agent",
+        description="iCloud Mail and Calendar for local agents and your terminal.",
+        epilog="Get started: icloud-agent auth login\nAgent setup: icloud-agent setup --codex",
     )
+    p.set_defaults(json=False)
     p.add_argument("--version", action="version", version=__version__)
     commands = p.add_subparsers(dest="command", required=True)
     a = commands.add_parser("auth", help="Save, check, or remove OS-stored credentials.")
     auth_commands = a.add_subparsers(dest="action", required=True)
-    auth_commands.add_parser("login").add_argument("--no-browser", action="store_true")
-    auth_commands.add_parser("status").add_argument("--check", action="store_true")
-    auth_commands.add_parser("logout")
+    auth_commands.add_parser("login", help="Connect your Apple Account.").add_argument(
+        "--no-browser", action="store_true"
+    )
+    auth_commands.add_parser("status", help="Check saved credentials or live access.").add_argument(
+        "--check", action="store_true"
+    )
+    auth_commands.add_parser("logout", help="Remove this tool’s saved credentials.")
     setup_parser = commands.add_parser("setup", help="Install bundled agent integration.")
     setup_parser.add_argument(
         "--codex", action="store_true", help="Register MCP and install the Codex skill."
@@ -89,7 +139,7 @@ def parser():
     call.add_argument("operation", choices=list(OPERATIONS))
     add_input(call)
     for category in ("mail", "calendar"):
-        group = commands.add_parser(category)
+        group = commands.add_parser(category, help=f"Read and manage iCloud {category}.")
         actions = group.add_subparsers(dest="action", required=True)
         for name, operation in OPERATIONS.items():
             prefix = category + "_"
@@ -121,7 +171,11 @@ def add_input(p):
 
 def main():
     logging.disable(logging.CRITICAL)
-    args = parser().parse_args()
+    command_parser = parser()
+    if len(sys.argv) == 1:
+        command_parser.print_help()
+        return
+    args = command_parser.parse_args()
     try:
         if args.command == "mcp":
             from .mcp_server import run
@@ -168,6 +222,10 @@ def main():
                 else "{}"
             )
             result = invoke(args.operation, json.loads(raw), dry_run=args.dry_run)
+    except EOFError:
+        result = error_result(
+            AgentError("cancelled", "Input closed. Run the command again to continue.")
+        )
     except KeyboardInterrupt:
         result = error_result(
             AgentError(
@@ -177,7 +235,10 @@ def main():
         )
     except Exception as exc:
         result = error_result(exc)
-    emit(result)
+    if args.json or not sys.stdout.isatty():
+        emit(result)
+    else:
+        terminal.result(terminal.console(stderr=not result["ok"]), result, args)
     if not result["ok"]:
         raise SystemExit(1)
 
