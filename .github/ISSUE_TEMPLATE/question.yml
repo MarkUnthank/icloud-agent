@@ -1,0 +1,21 @@
+name: Usage question
+description: Ask about setup, supported behavior, or local agent integration.
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: "Check SUPPORT.md and the troubleshooting guide first. Never include passwords, account config, private messages, calendar content, or real resource IDs."
+  - type: input
+    id: environment
+    attributes:
+      label: Version and environment
+      description: CLI version, operating system, install method, and agent/client if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: What are you trying to do?
+      description: Explain the expected outcome and what you tried using synthetic examples.
+    validations:
+      required: true

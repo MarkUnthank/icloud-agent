@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   quality:
+    timeout-minutes: 10
     name: Docs, lint & distribution
     runs-on: ubuntu-latest
     steps:
@@ -48,6 +49,7 @@ jobs:
           retention-days: 14
 
   test:
+    timeout-minutes: 10
     name: Tests (${{ matrix.os }}, Python ${{ matrix.python }})
     strategy:
       fail-fast: false
