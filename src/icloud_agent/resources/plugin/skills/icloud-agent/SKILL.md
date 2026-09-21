@@ -64,6 +64,11 @@ its current `sha256` as `expected_sha256` to `mail_send_draft`. Supply explicit 
 Never automatically retry partial or uncertain sends, or bypass the send journal.
 Archive or trash with `mail_move` and the corresponding discovered folder.
 
+Before creating an event, establish which calendar the user wants. If they have not
+specified one for the request, use `calendar_list` to list enabled calendars, ask them
+to choose, and wait for their answer before calling `calendar_create`. Do not infer
+the destination from list order, the event's content, or a previous event.
+
 Resolve dates and timezone before using ISO timestamps with offsets. All-day end dates
 are exclusive. Read events before editing or deleting; pass the ETag. On conflict,
 read the current event and reassess the change. Recurring occurrences can share a

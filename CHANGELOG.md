@@ -6,6 +6,8 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Have the agent ask which enabled calendar to use before creating an event when the
+  user has not specified a destination.
 - Prefill an editable **Sender name** from the iCloud CalDAV account during login and
   configuration. Include the saved name in draft From headers; allow a `from_name`
   override for individual drafts. Expose the saved name through `mail_senders` and auth status.
