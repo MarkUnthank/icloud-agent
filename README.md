@@ -67,9 +67,9 @@ See [setup](docs/setup.md) for `uv`/`pipx` installation, upgrades, and removal.
 
 ## What it can do
 
-| | Operations | Limits |
+| | Available now | Boundaries |
 |---|---|---|
-| **Mail** | Search and read messages, save and send drafts, mark read/unread, move between folders | Plain-text drafts; attachment metadata only; one account |
+| **Mail** | Search/read messages, save drafts, send reviewed drafts, mark read/unread, move to Archive/Trash or another folder | Plain-text drafts; attachment metadata only; one account |
 | **Calendar** | List calendars, find events and recurring occurrences, create/edit/delete personal events | No recurrence editing, invitations, or RSVP management |
 
 Reading and searching leave mail unread. See [usage](docs/usage.md) for sending and
@@ -84,7 +84,7 @@ editing workflows.
 | **ChatGPT desktop local work** | Plugin included; client/account compatibility is unverified |
 | **ChatGPT web, cloud, mobile** | Not supported |
 
-Your computer must be awake, online, and able to unlock its credential store.
+Your computer needs to be awake, online, and able to unlock its credential store.
 [Agent and plugin setup →](docs/clients.md)
 
 ## Your data
@@ -98,15 +98,15 @@ Read [security and privacy](docs/security.md), or [report a vulnerability privat
 
 ## Documentation
 
-| Guide | Contents |
+| Guide | What's inside |
 |---|---|
 | [Setup](docs/setup.md) | Install, authenticate, upgrade, switch accounts, uninstall |
-| [Usage](docs/usage.md) | Mail/calendar workflows and JSON examples |
-| [CLI & MCP reference](docs/reference.md) | Operations, inputs, defaults, and constraints |
-| [Agent setup](docs/clients.md) | Codex, other MCP clients, skill, desktop plugin |
+| [Usage](docs/usage.md) | Copyable mail/calendar workflows and JSON output |
+| [CLI & MCP reference](docs/reference.md) | Every operation, input, default, and constraint |
+| [Agent setup](docs/clients.md) | Codex, generic MCP clients, skill, desktop plugin |
 | [Troubleshooting](docs/troubleshooting.md) | Login, keychain, PATH, conflicts, uncertain sends |
-| [Architecture](docs/architecture.md) | CLI, MCP, protocols, and local state |
-| [Verification](VERIFICATION.md) | Completed tests and unverified behavior |
+| [Architecture](docs/architecture.md) | How the CLI, MCP, protocols, and state fit together |
+| [Verification](VERIFICATION.md) | What has been tested and what remains unverified |
 
 ## Contributing
 
