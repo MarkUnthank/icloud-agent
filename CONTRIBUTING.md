@@ -21,8 +21,11 @@ means no tasks have been scoped yet. Read [community conduct](CODE_OF_CONDUCT.md
 ## Development setup
 
 ```sh
-git clone https://github.com/MarkUnthank/icloud-agent.git
+# Replace YOUR-USERNAME with the owner of your fork.
+git clone https://github.com/YOUR-USERNAME/icloud-agent.git
 cd icloud-agent
+git remote add upstream https://github.com/MarkUnthank/icloud-agent.git
+git switch -c describe-your-change
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
 .venv/bin/python -m pytest -q
