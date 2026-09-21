@@ -6,7 +6,7 @@ description: Read and manage iCloud email and calendar locally using the icloud-
 # iCloud Mail and Calendar
 
 Use the connected icloud-agent MCP tools when available. Otherwise invoke the installed
-`icloud-agent` CLI through the local shell. This requires a local execution environment;
+`icloud-agent` CLI through the local shell. Always pass `--json` for agent calls. This requires a local execution environment;
 do not substitute browser automation or a cloud deployment if local access is unavailable.
 
 Run `icloud-agent auth status` to check setup. If missing, have the user run
@@ -19,7 +19,7 @@ Use `icloud-agent schema` or `icloud-agent schema OPERATION` for exact JSON inpu
 CLI operations use `icloud-agent mail search --input FILE` or
 `icloud-agent call mail_search --input FILE`; `--input -` accepts stdin.
 Use a quoted heredoc or a file writer for JSON with user content, not shell interpolation.
-All operation results are JSON with `ok` and either `data` or `error`. MCP tools accept
+With `--json`, all operation results are JSON with `ok` and either `data` or `error`. MCP tools accept
 an `arguments` object matching the same schema. An `ok:false` result is a failure even
 if the MCP transport itself succeeds.
 

@@ -6,6 +6,12 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Terminal presentation with cyan headings, grouped records, readable errors, and progress.
+- Guided login with default email input, inline validation, and hidden password entry.
+- Automatic JSON when stdout is piped; `--json` forces machine output in a terminal.
+- `NO_COLOR` support and terminal control-character filtering for external content.
+- Agent skill explicitly requests JSON; MCP output stays unchanged.
+
 ## 0.2.0 — 2026-09-21
 
 - Homebrew distribution through `MarkUnthank/tap/icloud-agent`.

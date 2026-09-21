@@ -13,8 +13,14 @@ GitHub-hosted macOS runner charges; the initial release also passed the former m
 Consult current CI runs for remote results. CI also checks lint/format, generated reference drift, local doc links,
 example schemas, version consistency, package building, and isolated wheel installation.
 
+The terminal presentation update has **52 passing tests locally on macOS / Python 3.14**.
+A local pseudo-terminal walkthrough used synthetic credentials and mocked verification/
+storage to check prompt layout and hidden password entry. It did not authenticate with Apple.
+
 Covered behavior:
 
+- Terminal/JSON routing, explicit JSON in a TTY, usage exit codes, `NO_COLOR`, literal
+  rendering of untrusted content, prompt routing, and failed-login behavior.
 - Credential-store interface, config permissions, account replacement/logout, and absence
   of password values in saved config or account repr. Tests use a fake keychain.
 - Strict input validation, safe errors, and dry-run avoiding credential/network access.

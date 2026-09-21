@@ -25,6 +25,7 @@ flowchart LR
 | Module | Responsibility |
 |---|---|
 | `cli.py` | Commands, JSON input/output, interactive setup |
+| `terminal.py` | Human terminal presentation, prompts, and progress |
 | `operations.py` | Strict Pydantic schemas, operation metadata, dispatch, mutation lock |
 | `mcp_server.py` | Official Python MCP SDK, stdio transport, tool annotations |
 | `auth.py` | Native credential backend, private config, account lifecycle |
@@ -71,3 +72,6 @@ Recurring occurrence reads are supported; recurrence editing, attendee invitatio
 RSVPs, attachment transfer, folder creation, multi-account routing, and contacts are
 not. Changes in these areas should start with a focused issue describing the intended
 user behavior and protocol requirements, not a promise of an imminent feature.
+
+The proposed [guided account setup](authentication-design.md) records the intended
+alias/calendar picker and the authentication questions that must be resolved first.

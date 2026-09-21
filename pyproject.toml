@@ -23,7 +23,8 @@ classifiers = [
 dependencies = [
   "caldav>=3.3.1,<4", "icalendar>=7.3,<8", "imapclient>=3.1,<4",
   "keyring>=25.7,<26", "mcp>=1.30,<2",
-  "platformdirs>=4,<5", "filelock>=3.20,<4"
+  "platformdirs>=4,<5", "filelock>=3.20,<4",
+  "rich>=14.1,<15", "rich-argparse>=1.7,<2"
 ]
 
 [project.optional-dependencies]
