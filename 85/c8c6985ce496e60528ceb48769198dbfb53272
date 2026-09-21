@@ -1,0 +1,25 @@
+CHANGELOG.md
+  s_6fe6e02598edf3::t_7e7bb6a947cc2e 9-10
+docs/setup.md
+  s_6fe6e02598edf3::t_3fec385930c01f 74-78
+src/icloud_agent/agent_skills.py
+  s_6fe6e02598edf3::t_904b4caa0123bb 196-197
+src/icloud_agent/terminal.py
+  s_6fe6e02598edf3::t_5af2e105c882a5 226,229-231,235-249,255-260,275-290
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "85c8c6985ce496e60528ceb48769198dbfb53272",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
