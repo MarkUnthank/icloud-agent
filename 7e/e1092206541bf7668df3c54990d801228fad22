@@ -1,0 +1,65 @@
+src/icloud_agent/cli.py
+  s_6fe6e02598edf3::t_48238160a34366 75,132-141,195,250,358
+src/icloud_agent/discovery.py
+  s_6fe6e02598edf3::t_48238160a34366 5,7,36-40,43
+README.md
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 52-53
+src/icloud_agent/resources/plugin/skills/icloud-agent/SKILL.md
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 25-30
+scripts/preview_setup.py
+  s_6fe6e02598edf3::t_48238160a34366 88,107-111
+src/icloud_agent/operations.py
+  s_6fe6e02598edf3::t_48238160a34366 76-91,161,163,187
+tests/test_core.py
+  s_6fe6e02598edf3::t_f4f54af8d4ca3e 7,22,57,308-349
+  s_6fe6e02598edf3::t_29679da122f8ed 350-352
+tests/test_terminal.py
+  s_6fe6e02598edf3::t_f4f54af8d4ca3e 166,176-180,203-204,208,210,225
+  s_6fe6e02598edf3::t_229c7e4d22bc71 226
+docs/security.md
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 31-32
+docs/troubleshooting.md
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 26-27
+tests/test_access.py
+  s_6fe6e02598edf3::t_f4f54af8d4ca3e 24,91-95
+CHANGELOG.md
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 9-11
+scripts/generate_reference.py
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 45
+docs/usage.md
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 91-98
+src/icloud_agent/mail.py
+  s_6fe6e02598edf3::t_48238160a34366 10,18,273,279-281
+docs/setup.md
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 116-117,155-156,158-159
+VERIFICATION.md
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 11-12,43-45
+src/icloud_agent/auth.py
+  s_6fe6e02598edf3::t_48238160a34366 5,54-72,76
+  s_6fe6e02598edf3::t_16c6136b36a1c4 77,93,146
+tests/test_discovery.py
+  s_6fe6e02598edf3::t_f4f54af8d4ca3e 5-6,40-43,48-51,64,67,88,131-160
+  s_6fe6e02598edf3::t_76f70b70568ee4 161-166
+docs/authentication-design.md
+  s_6fe6e02598edf3::t_59cd3ffe43f39e 32-43
+docs/reference.md
+  s_6fe6e02598edf3::t_1b885b132c81a4 23,50,86,96
+docs/tool-schemas.json
+  s_6fe6e02598edf3::t_e8ed9bbc760b61 3,148,204-218
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7ee1092206541bf7668df3c54990d801228fad22",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
