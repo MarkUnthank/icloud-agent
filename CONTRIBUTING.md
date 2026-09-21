@@ -40,6 +40,26 @@ On Windows, use `.venv\Scripts\python.exe` and `.venv\Scripts\ruff.exe`.
 Tests use synthetic data and fake Apple transports, plus a real local MCP subprocess.
 They do not require an Apple Account or permission to send email.
 
+### Preview the setup UI
+
+On macOS or Linux, open a separate terminal window and run:
+
+```sh
+.venv/bin/python scripts/preview_setup.py app
+.venv/bin/python scripts/preview_setup.py app-connected
+```
+
+The preview runs the real prompts with example accounts. Network connections,
+credential storage, browser launches, and changes to your account settings are
+blocked or replaced with fixtures. It clears the preview terminal's scrollback,
+so use a dedicated window.
+
+Use `alex@icloud.com` and app password `abcd-efgh-ijkl-mnop`. Enter advances paused service calls;
+Space and arrow keys work as usual in pickers. Ctrl-C exits the final screen.
+Run `scripts/preview_setup.py --help` for empty-calendar, configuration, skill-installation,
+and failure scenarios. These previews verify presentation,
+not Apple's live responses.
+
 ## Changes that fit this project
 
 - Keep the tool local and on demand; avoid adding a hosted service or a required daemon.

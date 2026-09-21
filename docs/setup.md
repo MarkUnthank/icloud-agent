@@ -44,7 +44,8 @@ Windows uses Credential Manager. These credential-store paths are not yet live-t
 ## Agent setup
 
 `icloud-agent setup --codex` registers local MCP and installs the bundled skill under
-`$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`). It preserves
+`~/.agents/skills/icloud-agent`. Codex reads that shared directory directly. `CODEX_HOME`
+still selects the Codex configuration used for MCP registration. Setup preserves
 unmanaged registrations/skills with the same name and can update its own integration.
 An absolute executable path avoids desktop PATH differences. When using Homebrew,
 invoke the command through its stable Homebrew `bin` or `opt` path, not a versioned
@@ -54,6 +55,44 @@ Cellar path. Rerun setup after changing installation method.
 path. Add `--json` for machine-readable output. On macOS it is `~/Library/Application Support/icloud-agent/plugin/icloud-agent`.
 No service is installed. Setup does not authenticate; login happens separately in
 your terminal. See [agent setup](clients.md) for other MCP clients.
+
+### Install agent skills
+
+`auth login` finishes with **Install agent skills** and **Finish**
+options. Choosing Finish, cancelling, or encountering a skill-installation error leaves
+the successful iCloud login saved. The optional prompt is omitted for JSON/piped output.
+
+To install or update skills separately:
+
+```sh
+icloud-agent setup --skills
+```
+
+The shared skill goes in `~/.agents/skills/icloud-agent`, following the global layout
+used by [Skills](https://github.com/vercel-labs/skills). Codex, Cursor, Gemini CLI,
+OpenCode, GitHub Copilot, Cline, and other agents that read the shared directory can
+use it there. Additional agents start unchecked, with a live selection count above
+the picker. Use **Space** to toggle agents and **Enter** to continue. Leave the count
+at zero and press **Enter** to skip the extras; the shared skill is still installed.
+Supported links include Claude Code, Continue, Goose, OpenClaw, OpenHands, Roo Code,
+and Windsurf.
+
+The installer copies the skill bundled with your installed CLI. It runs locally in
+Python; it does not invoke `npx`, download skills, or require Node/npm. Additional
+agents receive relative symlinks; if symlinks are unavailable, they receive copies.
+Use `--copy` to request copies explicitly. Rerun setup after upgrading to refresh copies.
+
+For an agent or script, select targets explicitly; `--json` disables the picker:
+
+```sh
+icloud-agent setup --skills --agent claude-code --agent windsurf --json
+icloud-agent setup --skills --json
+```
+
+The second command installs only the shared skill. `CLAUDE_CONFIG_DIR` and
+`XDG_CONFIG_HOME` are respected where applicable. An older icloud-agent-managed Codex
+copy is moved to the shared layout so it cannot shadow the updated skill. Unmanaged
+files or symlinks with the same name cause a conflict before installation changes them.
 
 For contributors working from source, `python3 install.py --codex --login` remains
 available. End users should use a package manager.
@@ -66,24 +105,33 @@ Run this yourself in a normal terminal:
 icloud-agent auth login
 ```
 
-1. Enter your Apple Account email in the terminal.
-2. Enter the iCloud Mail address you use to sign into IMAP. This may differ from the
-   Apple Account email. Press Enter to use the default.
-3. In the Apple page that opens, go to **Sign-In and Security → App-Specific Passwords**.
-4. Generate a password named `icloud-agent`.
-5. Paste the app-specific password into the hidden prompt.
-6. Add any existing sender aliases, separated by commas, or press Enter to skip.
-7. Choose enabled senders and calendars: **arrow keys** move, **Space** toggles, and
+1. Enter your iCloud login email address. The CLI uses it for Mail and Calendar.
+2. At `[Press enter to open in browser]`, press Enter to open
+   `https://account.apple.com/sign-in`. Sign in, then go to
+   **Sign-In and Security → App-Specific Passwords**.
+3. Generate a password named `icloud-agent`.
+4. Paste the app-specific password into the masked prompt, then press Enter. Trailing
+   whitespace copied with the password is removed; a bracketed paste does not submit it.
+5. iCloud account addresses and calendars load automatically.
+6. Choose enabled senders, then choose the default sender address. Your default can be
+   an alias different from your login email.
+   If an address is missing, select **Add another address…** in the sender picker.
+   **Sender name** is prefilled from your iCloud account when available: Enter accepts
+   it, or type a different name. If iCloud supplies no name, enter one.
+7. Choose enabled calendars: **arrow keys** move, **Space** toggles, and
    **Enter** saves. Calendars start unchecked; choose those you want the agent to access.
    An empty selection enables none. Ctrl-C cancels without saving changes.
+8. Once connected, choose **Install agent skills** or **Finish**.
 
 The CLI validates IMAP and CalDAV before saving credentials. It does not send a test
 email; SMTP authentication is checked only during an actual send. It uses your
-configured mail address to authenticate. Enabled aliases can be used as senders.
-Calendar names are discovered automatically. Aliases must be entered manually: the
-app-password connection does not provide a documented alias inventory. Only add
-addresses already configured for your mailbox in iCloud Mail; Apple checks sending
-permission during SMTP submission. Login does not verify aliases by sending a message.
+login email to authenticate. Enabled aliases can be used as senders.
+Address discovery reads the account's CalDAV `calendar-user-address-set` using the
+same app-specific password. This includes iCloud aliases and custom-domain addresses
+on the account tested, but is a calendar identity list, not an SMTP permission check.
+Only select addresses you use with iCloud Mail. Apple checks sending permission during
+SMTP submission; login does not send a verification message. If Apple omits an address,
+you can add it in the picker. No browser session or second password is needed for discovery.
 
 The password is stored in the OS credential store, never in the account JSON or plugin
 configuration. Subsequent invocations reuse it. Use `auth login --no-browser` to open
@@ -106,10 +154,12 @@ icloud-agent auth logout          # remove the active local credential/config
 Apple. One active account is supported. Running login for a different account replaces
 the active config and removes the previous account's saved credential from this tool.
 
-`auth configure` reuses the stored password, loads current calendars, and restores your
-choices. Newly discovered calendars remain unchecked. Sender choices control draft
+`auth configure` reuses the stored password, reloads addresses and calendars, and restores
+your choices, including your edited sender name. Run it once if an existing setup has no
+sender name saved. Newly discovered addresses and calendars remain unchecked. Sender choices control draft
 creation and sending, including previously saved drafts; they do not filter the shared
-inbox. `mail senders` lists enabled From addresses for users and agents.
+inbox. `mail senders` lists enabled From addresses and the saved sender name for users and agents.
+That name applies to every enabled address; `mail_draft.from_name` can override it for a draft.
 
 Local logout does not revoke the password at Apple. Revoke it at
 [account.apple.com](https://account.apple.com/) to invalidate it remotely. Never paste
@@ -150,7 +200,9 @@ For an installation made with `--codex`:
 codex mcp remove icloud-agent
 ```
 
-Remove the managed `$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`) directory. If you installed a desktop
+Remove `~/.agents/skills/icloud-agent` and its links/copies in any additional agents you
+selected. For an older installation, the managed skill may still be under
+`$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`). If you installed a desktop
 plugin separately, uninstall it in that client's plugin manager as well. Finally,
 run `brew uninstall icloud-agent`, `pipx uninstall icloud-agent`, or
 `uv tool uninstall icloud-agent`, matching your install method. Remove the exported

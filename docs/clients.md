@@ -13,8 +13,9 @@ icloud-agent setup --codex
 icloud-agent auth login
 ```
 
-The setup command registers an absolute command path with `codex mcp add` and copies
-the bundled skill into `$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`).
+The setup command registers an absolute command path with `codex mcp add` and installs
+the bundled skill into `~/.agents/skills/icloud-agent`, which Codex reads directly.
+`CODEX_HOME` controls MCP registration; the skill uses the shared global directory.
 Restart Codex or start a fresh local session, then ask it to use iCloud Agent.
 
 ```sh
@@ -33,10 +34,8 @@ After installing the CLI with pipx/uv and authenticating in your own terminal:
 codex mcp add icloud-agent -- /absolute/path/to/icloud-agent mcp
 ```
 
-Run `icloud-agent setup` and copy `skills/icloud-agent` from its exported plugin to your actual
-Codex skill directory. If using a custom `CODEX_HOME`, choose its `skills` directory
-rather than the default. Preserve any existing skill with the same name until you
-have reviewed it. Start a new session after registration.
+Run `icloud-agent setup --skills` to install the bundled skill. Start a new session
+after registration.
 
 ## Other stdio MCP clients
 
@@ -75,8 +74,12 @@ and the host's permissions govern execution.
 ## Skill without MCP
 
 A client that can run local commands may use the companion `SKILL.md` directly.
-Install the CLI and credential first, then load the skill through that client's skill
-mechanism. The skill teaches ID handling, draft hashes, event ETags, and scope boundaries.
+Choose **Install agent skills** after login, or run `icloud-agent setup --skills`.
+The shared copy lives in `~/.agents/skills/icloud-agent`; select any additional agents
+in the Space/Enter picker. Their directories link to that copy using the same global
+layout as the Skills CLI, without running that CLI or requiring Node/npm.
+See [skill installation](setup.md#install-agent-skills) for supported agents and flags.
+The skill teaches ID handling, draft hashes, event ETags, and scope boundaries.
 A skill alone does not grant filesystem, shell, or iCloud access to a cloud-only client.
 
 ## Desktop plugin

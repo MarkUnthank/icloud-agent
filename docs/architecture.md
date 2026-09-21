@@ -26,6 +26,8 @@ flowchart LR
 |---|---|
 | `cli.py` | Commands, JSON input/output, interactive setup |
 | `terminal.py` | Human terminal presentation, prompts, and progress |
+| `agent_skills.py` | Shared skill installation, agent links, conflict checks, and rollback |
+| `setup.py` | Bundled plugin export and Codex MCP registration |
 | `operations.py` | Strict Pydantic schemas, operation metadata, dispatch, access policy and operation lock |
 | `mcp_server.py` | Official Python MCP SDK, stdio transport, tool annotations |
 | `auth.py` | Native credential backend, private config, account lifecycle |
@@ -65,6 +67,14 @@ The local MCP process is sometimes called a “server” by the protocol, but it
 on stdio, not a TCP port. The client may keep it alive for a session. No deployment,
 public URL, launch agent, scheduled task, or system daemon is installed.
 
+Skill installation follows the global directory and symlink conventions in
+[Skills 1.7.0](https://github.com/vercel-labs/skills). The shared folder is
+`~/.agents/skills/icloud-agent`; shared-skill agents read it directly, while additional
+agents receive relative links or copies. This is an independent Python implementation
+using the packaged skill. It does not run the Skills CLI or modify its lockfile.
+Owned paths are staged and replaced under a local installation lock; a failed commit
+restores their previous contents. Unmanaged destinations are preserved.
+
 ## Scope
 
 The initial release focuses on one account, basic mail workflows, and personal events.
@@ -74,4 +84,4 @@ not. Changes in these areas should start with a focused issue describing the int
 user behavior and protocol requirements, not a promise of an imminent feature.
 
 The [authentication decisions](authentication-design.md) explain the app-password
-flow, alias limitation, and how access selections are enforced.
+flow, address discovery and its limits, and how access selections are enforced.

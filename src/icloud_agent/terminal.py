@@ -14,7 +14,17 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
-THEME = Theme({"accent": "cyan", "muted": "dim", "success": "green", "failure": "red"})
+THEME = Theme(
+    {
+        "accent": "cyan",
+        "accent_bold": "bold cyan",
+        "muted": "dim",
+        "success": "green",
+        "success_bold": "bold green",
+        "failure": "red",
+        "failure_bold": "bold red",
+    }
+)
 
 
 def console(*, stderr=False):
@@ -39,7 +49,7 @@ def literal(value):
 
 def heading(out, title):
     out.print()
-    out.print(Text.assemble(("  icloud-agent", "bold accent"), (f"  /  {title}", "muted")))
+    out.print(Text.assemble(("  icloud-agent", "accent_bold"), (f"  /  {title}", "muted")))
     out.print()
 
 
@@ -54,11 +64,36 @@ def ask(out, label, default=None, *, password=False):
         prompt.append(f" [{literal(default)}]", style="muted")
     prompt.append(" › ", style="accent")
     if password:
-        import getpass
-
-        out.print(prompt, end="")
-        return getpass.getpass("", stream=out.file).strip()
+        return password_input(out, prompt)
     return out.input(prompt).strip() or default or ""
+
+
+def password_input(out, prompt):
+    from prompt_toolkit import PromptSession
+    from prompt_toolkit.clipboard import DummyClipboard
+    from prompt_toolkit.history import DummyHistory
+    from prompt_toolkit.key_binding import KeyBindings
+    from prompt_toolkit.keys import Keys
+    from prompt_toolkit.output import ColorDepth
+    from prompt_toolkit.output.defaults import create_output
+
+    bindings = KeyBindings()
+
+    @bindings.add(Keys.BracketedPaste)
+    def paste(event):
+        # A copied trailing return is data, never a submit key or the next answer.
+        # Keep internal whitespace intact so password validation can reject it.
+        event.current_buffer.insert_text(event.data.strip())
+
+    session = PromptSession(
+        is_password=True,
+        history=DummyHistory(),
+        clipboard=DummyClipboard(),
+        key_bindings=bindings,
+        output=create_output(stdout=out.file),
+        color_depth=ColorDepth.DEPTH_1_BIT if "NO_COLOR" in os.environ else None,
+    )
+    return session.prompt(prompt.plain).strip()
 
 
 def progress(out, message):
@@ -93,30 +128,62 @@ def value_view(value):
     return Text(literal(value), overflow="fold")
 
 
+def connected(out, email):
+    content = Text.assemble(
+        ("✓  Connected to iCloud", "success_bold"),
+        ("\n\n" + literal(email)),
+        ("\nMail and Calendar are ready.", "muted"),
+    )
+    out.print()
+    out.print(
+        Padding(
+            Panel.fit(
+                content,
+                title=Text(" ✦ icloud-agent ", style="accent_bold"),
+                title_align="left",
+                border_style="success",
+                padding=(1, 3),
+            ),
+            (0, 2),
+        )
+    )
+    out.print()
+
+
 def result(out, payload, args):
     if not payload["ok"]:
         error = payload["error"]
         heading(out, "error")
-        out.print(Text("  " + label(error["code"]), style="bold failure"))
-        if error.get("message"):
+        out.print(Text("  " + label(error["code"]), style="failure_bold"))
+        if (
+            error.get("message")
+            and error["message"].rstrip(".").casefold() != label(error["code"]).casefold()
+        ):
             out.print(Padding(Text(literal(error["message"])), (1, 2, 0, 2)))
         for issue in error.get("issues", []):
             field = ".".join(str(x) for x in issue["field"])
             out.print(Padding(Text(literal(f"{field}: {issue['message']}")), (0, 2)))
+        if error.get("operation") and error.get("stage"):
+            out.print(
+                Padding(
+                    Text(literal(f"{error['operation']} · {error['stage']}"), style="muted"),
+                    (1, 2, 0, 2),
+                )
+            )
+        if error.get("recovery"):
+            out.print(Padding(Text(literal(error["recovery"])), (1, 2, 0, 2)))
         out.print()
         return
     data = payload["data"]
+    if args.command == "setup" and data.get("skills") and not data["codex_registered"]:
+        from .agent_skills import installed
+
+        installed(out, data["skills"])
+        return
     action = getattr(args, "action", None)
     if args.command == "auth":
         if action == "login":
-            out.print()
-            out.print(Text("  Connected to iCloud", style="bold success"))
-            out.print(Text("  " + literal(data["mail_address"]), style="muted"))
-            out.print("\n  Mail and Calendar verified. SMTP is checked when you send.")
-            out.print(
-                Text("  Next: restart your agent, or run icloud-agent mail search", style="muted")
-            )
-            out.print()
+            connected(out, data["mail_address"])
             return
         title = "account"
     elif args.command == "setup":
@@ -129,7 +196,7 @@ def result(out, payload, args):
         out.print(JSON(json.dumps(data, ensure_ascii=True, default=str)))
     elif args.command == "setup":
         if data["codex_registered"]:
-            out.print(Text("  Codex ready", style="bold success"))
+            out.print(Text("  Codex ready", style="success_bold"))
             out.print()
         out.print(
             Padding(
@@ -137,32 +204,58 @@ def result(out, payload, args):
                     {
                         k: v
                         for k, v in data.items()
-                        if k not in {"next", "codex_registered"} and v is not None
+                        if k not in {"next", "codex_registered", "skills", "skill"}
+                        and v is not None
                     }
                 ),
                 (0, 2),
             )
         )
+        if data.get("skills"):
+            from .agent_skills import installed
+
+            installed(out, data["skills"])
         out.print("\n  Next: icloud-agent auth login")
-        out.print(Text("  Restart your agent to load the tools.", style="muted"))
+        if not data.get("skills"):
+            out.print(Text("  Restart your agent to load the tools.", style="muted"))
     else:
         out.print(Padding(value_view(data), (0, 2)))
     out.print()
 
 
-def choose(out, title, choices, selected):
+def choose(out, title, choices, selected, *, optional=False):
     """Use the same stderr surface as login; never write prompt UI to JSON stdout."""
     import questionary
+    from prompt_toolkit.filters import is_done
+    from prompt_toolkit.layout import ConditionalContainer, HSplit, Layout, Window
+    from prompt_toolkit.layout.controls import FormattedTextControl
     from prompt_toolkit.output import ColorDepth
     from prompt_toolkit.output.defaults import create_output
 
-    return questionary.checkbox(
+    selection_count = sum(value in selected for _, value in choices)
+
+    def track_selection(values):
+        nonlocal selection_count
+        selection_count = len(values)
+        return True
+
+    def selection_hint():
+        action = "Enter continue" if selection_count else "Enter skip extras"
+        return [
+            ("class:answer", f"  {selection_count}/{len(choices)} selected"),
+            ("class:instruction", f" · {action}"),
+        ]
+
+    question = questionary.checkbox(
         title,
         choices=[
             questionary.Choice(literal(name), value=value, checked=value in selected)
             for name, value in choices
         ],
-        instruction="(↑↓ move · Space toggle · Enter save)",
+        instruction=(
+            "(↑↓ move · Space toggle)" if optional else "(↑↓ move · Space toggle · Enter continue)"
+        ),
+        validate=track_selection,
         style=questionary.Style(
             [
                 ("qmark", "fg:ansicyan"),
@@ -171,6 +264,48 @@ def choose(out, title, choices, selected):
                 ("pointer", "fg:ansicyan bold"),
                 ("highlighted", "fg:ansicyan"),
                 ("selected", "fg:ansicyan"),
+            ]
+        )
+        if "NO_COLOR" not in os.environ
+        else questionary.Style([]),
+        output=create_output(stdout=out.file),
+        color_depth=ColorDepth.DEPTH_1_BIT if "NO_COLOR" in os.environ else None,
+    )
+    if optional:
+        layout = question.application.layout
+        question.application.layout = Layout(
+            HSplit(
+                [
+                    ConditionalContainer(
+                        Window(FormattedTextControl(selection_hint), height=2),
+                        filter=~is_done,
+                    ),
+                    layout.container,
+                ]
+            ),
+            focused_element=layout.current_control,
+        )
+    return question.unsafe_ask()
+
+
+def pick_one(out, title, choices, selected):
+    """Choose one value while keeping all prompt output away from JSON stdout."""
+    import questionary
+    from prompt_toolkit.output import ColorDepth
+    from prompt_toolkit.output.defaults import create_output
+
+    return questionary.select(
+        title,
+        choices=[questionary.Choice(literal(name), value=value) for name, value in choices],
+        default=selected,
+        instruction="(↑↓ move · Enter select)",
+        style=questionary.Style(
+            [
+                ("qmark", "fg:ansicyan"),
+                ("question", "bold"),
+                ("answer", "fg:ansicyan bold"),
+                ("pointer", "fg:ansicyan bold"),
+                ("highlighted", "fg:ansicyan"),
             ]
         )
         if "NO_COLOR" not in os.environ

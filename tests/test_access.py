@@ -6,7 +6,7 @@ import pytest
 from prompt_toolkit.application import create_app_session
 from prompt_toolkit.input import create_pipe_input
 
-from icloud_agent import auth, calendar, cli, mail, operations, terminal
+from icloud_agent import auth, calendar, cli, discovery, mail, operations, terminal
 from icloud_agent.errors import AgentError
 
 CALENDAR = "https://p01-caldav.icloud.com/123/home/"
@@ -20,6 +20,8 @@ def account():
         ["alias@icloud.com"],
         [CALENDAR],
         ["mail@icloud.com", "alias@icloud.com"],
+        "alias@icloud.com",
+        "Alex Example",
     )
 
 
@@ -86,7 +88,11 @@ def test_enabled_sender_is_discoverable_to_agents(monkeypatch):
     monkeypatch.setattr(auth, "load", account)
     monkeypatch.setattr(auth, "operation_lock", nullcontext)
     result = operations.invoke("mail_senders", {})
-    assert result["data"] == {"addresses": ["alias@icloud.com"], "default": "alias@icloud.com"}
+    assert result["data"] == {
+        "addresses": ["alias@icloud.com"],
+        "default": "alias@icloud.com",
+        "sender_name": "Alex Example",
+    }
 
 
 def test_old_config_requires_explicit_access_selection(monkeypatch, tmp_path):
@@ -116,6 +122,20 @@ def test_picker_control_c_cancels():
             terminal.choose(out, "Enabled", [("One", "1")], [])
 
 
+def test_default_sender_picker_handles_arrows_and_enter(monkeypatch):
+    monkeypatch.setenv("NO_COLOR", "1")
+    out = SimpleNamespace(file=io.StringIO())
+    with create_pipe_input() as pipe, create_app_session(input=pipe):
+        pipe.send_text("\x1b[B\r")
+        result = terminal.pick_one(
+            out,
+            "Default Sender Address",
+            [("Primary", "primary@icloud.com"), ("Alias", "alias@icloud.com")],
+            "primary@icloud.com",
+        )
+    assert result == "alias@icloud.com"
+
+
 def test_configure_cancel_preserves_saved_settings(monkeypatch, tmp_path):
     path = tmp_path / "account.json"
     path.write_text("original settings")
@@ -124,7 +144,7 @@ def test_configure_cancel_preserves_saved_settings(monkeypatch, tmp_path):
     monkeypatch.setattr(auth, "operation_lock", nullcontext)
     monkeypatch.setattr(auth, "save", lambda a: pytest.fail("Unexpected save"))
     monkeypatch.setattr(cli.sys, "stdin", SimpleNamespace(isatty=lambda: True))
-    monkeypatch.setattr(calendar, "discover", lambda a: [])
+    monkeypatch.setattr(discovery, "account_resources", lambda a: {})
 
     def cancel(*args):
         raise KeyboardInterrupt
@@ -143,7 +163,7 @@ def test_configure_refuses_concurrent_replacement(monkeypatch, tmp_path):
     monkeypatch.setattr(auth, "operation_lock", nullcontext)
     monkeypatch.setattr(auth, "save", lambda a: pytest.fail("Unexpected save"))
     monkeypatch.setattr(cli.sys, "stdin", SimpleNamespace(isatty=lambda: True))
-    monkeypatch.setattr(calendar, "discover", lambda a: [])
+    monkeypatch.setattr(discovery, "account_resources", lambda a: {})
     monkeypatch.setattr(cli, "select_access", lambda *args: path.write_text("replaced settings"))
     with pytest.raises(AgentError, match="settings changed"):
         cli.configure()

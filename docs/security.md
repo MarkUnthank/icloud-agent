@@ -18,7 +18,7 @@ data handling. Local execution does not make the model or conversation offline.
 Authentication uses an Apple app-specific password saved through an explicitly selected
 native backend: macOS Keychain, Windows Credential Manager, or Linux Secret Service.
 There is no plaintext keyring fallback, password argument, environment-variable login,
-browser-cookie extraction, or hidden main-account password storage. The credential is
+browser-cookie extraction, or main-account password login. The credential is
 available in process memory while making requests to Apple.
 
 The OS may prompt to unlock or allow access to its credential store. Any process
@@ -27,8 +27,9 @@ credential: this is not isolation from an already-compromised local user account
 
 The password is revocable at Apple. It is not a fine-grained read-only token or a set
 of per-tool permission scopes. It supports both mail and calendar access for this tool.
-The account config contains the Apple Account and iCloud Mail addresses, manually
-entered sender aliases, enabled senders, and enabled calendar IDs. It contains no
+The account config contains the Apple Account and iCloud Mail addresses, discovered
+and manually added sender addresses, enabled and default senders, the sender display name,
+and enabled calendar IDs. It contains no
 password. Local selection policy limits what this connector exposes; it does not
 reduce the underlying app-specific password's permissions at Apple.
 
@@ -45,6 +46,13 @@ Application paths use `platformdirs`. Defaults are:
 Linux XDG variables may override defaults. The local installer's runtime/plugin
 location is distinct from platformdirs on some platforms; see [setup](setup.md).
 The journal consists of `send-*.json` files; the lock is `operations.lock`.
+
+Agent skills live in `~/.agents/skills/icloud-agent`, with optional links or copies
+in other agents' skill directories. Skill installation uses bundled files and does
+not access credentials or change Mail/Calendar selections. Its lock is
+`~/.agents/.icloud-agent-skills.lock`. The ownership marker inside the installed skill
+allows subsequent updates; Codex MCP ownership is tracked separately by
+`$CODEX_HOME/.icloud-agent-mcp` (default `~/.codex/.icloud-agent-mcp`).
 
 Private directories/config files receive restrictive POSIX permissions. Windows file
 protection relies on the user's profile/ACLs and its native credential manager; a POSIX

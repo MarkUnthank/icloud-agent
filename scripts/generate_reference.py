@@ -39,9 +39,10 @@ def generate():
         "",
         "| Command | Behavior |",
         "|---|---|",
-        "| `setup [--codex]` | Export bundled plugin; optionally register Codex MCP and install its skill. |",
+        "| `setup [--codex] [--skills] [--agent NAME] [--copy]` | Export bundled plugin; register Codex MCP or install the shared skill and optional agent links. `--agent` is repeatable and requires `--skills`. |",
         "| `auth login [--no-browser]` | Interactive local setup; IMAP/CalDAV checked before saving. |",
         "| `auth status [--check]` | Local credential presence; optionally live IMAP/CalDAV checks. |",
+        "| `auth configure` | Reload addresses/calendars, choose enabled resources, and edit the sender name. |",
         "| `auth logout` | Remove active local credential and account config. |",
         "| `schema [OPERATION]` | Describe operation inputs without authentication. |",
         "| `mcp` | Start a local stdio MCP process. |",
@@ -71,7 +72,10 @@ def generate():
         if not fields:
             lines += ["Input: `{}`."]
             continue
-        lines += ["| Field | Type | Required | Default | Constraints |", "|---|---|---|---|---|"]
+        lines += [
+            "| Field | Type | Required | Default | Meaning and constraints |",
+            "|---|---|---|---|---|",
+        ]
         schema = schemas[name]["input_schema"]
         for field_name, model_field in fields.items():
             field = schema["properties"][field_name]
@@ -95,7 +99,9 @@ def generate():
                 if required
                 else "`" + json.dumps(model_field.get_default(call_default_factory=True)) + "`"
             )
-            constraint = "; ".join(f"{k}: `{v}`" for k, v in constraints.items()) or "—"
+            constraint = field.get("description", "")
+            limits = "; ".join(f"{k}: `{v}`" for k, v in constraints.items())
+            constraint = "; ".join(value for value in (constraint, limits) if value) or "—"
             lines.append(
                 f"| `{field_name}` | {type_label(field)} | {'Yes' if required else 'No'} | {default} | {constraint} |"
             )

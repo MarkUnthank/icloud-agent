@@ -43,43 +43,15 @@ def main():
     bindir = runtime / ("Scripts" if sys.platform == "win32" else "bin")
     executable = bindir / ("icloud-agent.exe" if sys.platform == "win32" else "icloud-agent")
     python = bindir / ("python.exe" if sys.platform == "win32" else "python")
-    skill_source = root / "src/icloud_agent/resources/plugin/skills/icloud-agent"
-    skill_destination = Path.home() / ".codex/skills/icloud-agent"
     if args.codex and not shutil.which("codex"):
         parser.error("Install Codex first, or omit --codex.")
-    if args.codex and skill_destination.exists():
-        if not (skill_destination / ".icloud-agent-installed").exists():
-            parser.error(f"Existing unmanaged skill at {skill_destination}; no files were changed.")
-    if args.codex:
-        existing = subprocess.run(["codex", "mcp", "get", "icloud-agent"], capture_output=True)
-        marker = base / "codex-managed"
-        if existing.returncode == 0 and not marker.exists():
-            parser.error("An icloud-agent MCP connection already exists; no files were changed.")
     base.mkdir(parents=True, exist_ok=True, mode=0o700)
     base.chmod(0o700)
     venv.create(runtime, with_pip=True)
     subprocess.run(
         [str(python), "-m", "pip", "install", "--disable-pip-version-check", str(root)], check=True
     )
-    # Use an absolute executable path in the portable plugin copy for desktop PATH differences.
-    import json
-
-    plugin_copy = base / "plugin/icloud-agent"
-    shutil.copytree(root / "src/icloud_agent/resources/plugin", plugin_copy, dirs_exist_ok=True)
-    (plugin_copy / ".mcp.json").write_text(
-        json.dumps(
-            {"mcpServers": {"icloud-agent": {"command": str(executable), "args": ["mcp"]}}},
-            indent=2,
-        )
-        + "\n"
-    )
-    if args.codex:
-        subprocess.run(
-            ["codex", "mcp", "add", "icloud-agent", "--", str(executable), "mcp"], check=True
-        )
-        shutil.copytree(skill_source, skill_destination, dirs_exist_ok=True)
-        (skill_destination / ".icloud-agent-installed").touch()
-        (base / "codex-managed").touch()
+    subprocess.run([str(executable), "setup", *(["--codex"] if args.codex else [])], check=True)
     if sys.platform != "win32":
         command = Path.home() / ".local/bin/icloud-agent"
         command.parent.mkdir(parents=True, exist_ok=True)
@@ -92,9 +64,6 @@ def main():
         print(f"CLI: {executable}\nAdd {command.parent} to PATH if it is not already there.")
     else:
         print(f"CLI: {executable}")
-    print(
-        f"Desktop plugin copy: {plugin_copy}\nRestart your agent client to load newly installed tools."
-    )
     if args.login:
         subprocess.run([str(executable), "auth", "login"], check=True)
     else:

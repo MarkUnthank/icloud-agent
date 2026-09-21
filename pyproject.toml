@@ -12,7 +12,7 @@ license = "MIT"
 authors = [{name = "Mark Unthank"}]
 keywords = ["icloud", "mcp", "codex", "caldav", "imap", "cli", "agents"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
@@ -23,8 +23,9 @@ classifiers = [
 dependencies = [
   "caldav>=3.3.1,<4", "icalendar>=7.3,<8", "imapclient>=3.1,<4",
   "keyring>=25.7,<26", "mcp>=1.30,<2",
-  "platformdirs>=4,<5", "filelock>=3.20,<4",
-  "rich>=14.1,<15", "rich-argparse>=1.7,<2", "questionary>=2.1,<3"
+  "platformdirs>=4,<5", "filelock>=3.20,<4", "niquests>=3.21,<4",
+  "rich>=14.1,<15", "rich-argparse>=1.7,<2", "questionary>=2.1,<3",
+  "prompt-toolkit>=3.0.51,<3.1"
 ]
 
 [project.optional-dependencies]

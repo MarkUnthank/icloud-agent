@@ -4,12 +4,15 @@ from types import SimpleNamespace
 
 import pytest
 
-from icloud_agent import setup
+from icloud_agent import agent_skills, setup
 from icloud_agent.errors import AgentError
 
 
 @pytest.fixture
 def integration(monkeypatch, tmp_path):
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    for key in ("CLAUDE_CONFIG_DIR", "XDG_CONFIG_HOME"):
+        monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr(setup, "user_data_path", lambda *a, **k: tmp_path / "data")
     monkeypatch.setenv("CODEX_HOME", str(tmp_path / "custom-codex"))
     monkeypatch.setattr(setup, "executable_path", lambda: Path("/opt/homebrew/bin/icloud-agent"))
@@ -30,7 +33,9 @@ def test_setup_bundled_plugin_and_custom_codex_home(integration):
     plugin = Path(result["plugin"])
     config = json.loads((plugin / ".mcp.json").read_text())
     assert config["mcpServers"]["icloud-agent"]["command"] == "/opt/homebrew/bin/icloud-agent"
-    assert (root / "custom-codex/skills/icloud-agent/SKILL.md").is_file()
+    assert (root / ".agents/skills/icloud-agent/SKILL.md").is_file()
+    assert (root / "custom-codex/.icloud-agent-mcp").is_file()
+    assert result["skill"] == str(root / ".agents/skills/icloud-agent")
     assert calls[-1] == [
         "/bin/codex",
         "mcp",
@@ -69,6 +74,24 @@ def test_setup_without_codex(integration):
     assert not result["codex_registered"]
     assert (Path(result["plugin"]) / "skills/icloud-agent/SKILL.md").is_file()
     assert not calls
+
+
+def test_setup_skills_does_not_register_mcp(integration):
+    root, calls = integration
+    result = setup.setup(skills=True, agents=["claude-code", "codex"])
+    assert result["skills"]["skill"] == str(root / ".agents/skills/icloud-agent")
+    assert (root / ".claude/skills/icloud-agent").is_symlink()
+    assert not result["codex_registered"] and not calls
+
+
+def test_migrated_skill_keeps_mcp_ownership(integration, monkeypatch):
+    root, calls = integration
+    legacy = root / "custom-codex/skills/icloud-agent"
+    legacy.mkdir(parents=True)
+    (legacy / agent_skills.MARKER).touch()
+    agent_skills.install()
+    monkeypatch.setattr(setup.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0))
+    assert setup.setup(codex=True)["codex_registered"]
 
 
 def test_executable_keeps_stable_symlink(monkeypatch, tmp_path):

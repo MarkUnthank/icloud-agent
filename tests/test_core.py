@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from datetime import UTC, datetime
 from email import policy
 from email.message import EmailMessage
+from email.parser import BytesParser
 from types import SimpleNamespace
 
 import pytest
@@ -17,6 +18,8 @@ CALENDAR = "https://p01-caldav.icloud.com/123/home/"
 EVENT_URL = CALENDAR + "event.ics"
 ACCOUNT.sender_addresses = [ACCOUNT.mail_address]
 ACCOUNT.calendar_ids = [CALENDAR]
+ACCOUNT.default_sender_address = ACCOUNT.mail_address
+ACCOUNT.sender_name = "Alex Example"
 
 
 @contextmanager
@@ -50,6 +53,8 @@ def test_credentials_persist_outside_config_and_logout(monkeypatch, tmp_path):
     assert auth.load().password == "test-secret"
     assert auth.load().sender_addresses == ACCOUNT.sender_addresses
     assert auth.load().calendar_ids == ACCOUNT.calendar_ids
+    assert auth.load().default_sender_address == ACCOUNT.default_sender_address
+    assert auth.load().sender_name == ACCOUNT.sender_name
     auth.logout()
     assert not config.exists()
     assert not keychain.values
@@ -249,6 +254,117 @@ def test_uncertain_send_is_not_retried(draft_transport, tmp_path):
     assert SMTP.sent == 1
 
 
+@pytest.mark.parametrize(
+    "flag,name",
+    [(b"\\Drafts", "Drafts"), (b"\\Sent", "Sent Messages"), (b"\\Trash", "Deleted Messages")],
+)
+def test_special_folder_falls_back_to_exact_icloud_name(flag, name):
+    client = SimpleNamespace(list_folders=lambda: [([], b"/", name)])
+    assert mail.special_folder(client, flag) == name
+
+
+def test_special_folder_prefers_flagged_folder_over_conventional_name():
+    client = SimpleNamespace(
+        list_folders=lambda: [([], b"/", "Drafts"), ([b"\\drafts"], b"/", "Brouillons")]
+    )
+    assert mail.special_folder(client, b"\\Drafts") == "Brouillons"
+
+
+@pytest.mark.parametrize(
+    "folders",
+    [
+        [],
+        [([], b"/", "drafts")],
+        [([], b"/", "Archive/Drafts")],
+        [([b"\\Noselect"], b"/", "Drafts")],
+        [([b"\\Drafts", b"\\Noselect"], b"/", "Remote Drafts"), ([], b"/", "Drafts")],
+        [([b"\\Drafts"], b"/", "One"), ([b"\\Drafts"], b"/", "Two"), ([], b"/", "Drafts")],
+        [([], b"/", "Drafts"), ([], b"/", "Drafts")],
+    ],
+)
+def test_special_folder_rejects_ambiguous_or_nonselectable_matches(folders):
+    with pytest.raises(AgentError):
+        mail.special_folder(SimpleNamespace(list_folders=lambda: folders), b"\\Drafts")
+
+
+def test_create_and_send_with_unflagged_drafts_and_flagged_sent(
+    draft_transport, tmp_path, monkeypatch
+):
+    mailbox, ref, digest = draft_transport
+    monkeypatch.setattr(
+        mailbox,
+        "list_folders",
+        lambda: [([], b"/", "Drafts"), ([b"\\Sent"], b"/", "Sent Messages")],
+    )
+    saved = mail.draft(ACCOUNT, ["recipient@example.com"], "Synthetic draft", "Synthetic body")
+    assert saved["saved"] and mail.decode_ref(saved["id"])[0] == "Drafts"
+    assert mailbox.appended[0][0][0] == "Drafts"
+    result = mail.send_draft(ACCOUNT, ref, digest, tmp_path)
+    assert result["smtp_accepted"] and result["draft_removed"]
+    assert not result["delivery_confirmed"]
+    assert mailbox.appended[1][0][0] == "Sent Messages"
+
+
+@pytest.mark.parametrize("from_name", [None, 'Café, "Support"'])
+def test_draft_name_roundtrips_and_smtp_preserves_reviewed_from(
+    draft_transport, tmp_path, monkeypatch, from_name
+):
+    mailbox, ref, _ = draft_transport
+    mail.draft(ACCOUNT, ["recipient@example.com"], "Hello", "Body", from_name=from_name)
+    mailbox.raw = mailbox.appended[0][0][1]
+    parsed = BytesParser(policy=policy.default).parsebytes(mailbox.raw)
+    sender = parsed["From"].addresses[0]
+    assert sender.display_name == (from_name or ACCOUNT.sender_name)
+    assert sender.addr_spec == ACCOUNT.mail_address
+    reviewed = mail.read(ACCOUNT, ref)
+    sent = []
+
+    def capture(self, message, *, from_addr, to_addrs):
+        sent.append((message["From"].addresses[0], from_addr))
+        return {}
+
+    monkeypatch.setattr(SMTP, "send_message", capture)
+    result = mail.send_draft(ACCOUNT, ref, reviewed["sha256"], tmp_path)
+    assert result["smtp_accepted"]
+    assert sent[0][0].display_name == sender.display_name
+    assert sent[0][1] == ACCOUNT.mail_address
+
+
+@pytest.mark.parametrize("name", ["", " ", "Alex\r\nBcc: other@example.com", "a\x00b", "x" * 201])
+def test_invalid_from_names_fail_schema_validation_before_auth(monkeypatch, name):
+    monkeypatch.setattr(auth, "load", lambda: pytest.fail("Unexpected credential access"))
+    result = operations.invoke(
+        "mail_draft",
+        {"to": ["person@example.com"], "subject": "Hi", "body": "Hi", "from_name": name},
+    )
+    assert result["error"]["code"] == "invalid_arguments"
+
+
+def test_missing_sender_name_requires_selection_before_drafting(monkeypatch):
+    account = auth.Account("person@icloud.com", "person@icloud.com", "synthetic")
+    account.sender_addresses = [account.mail_address]
+    account.default_sender_address = account.mail_address
+    monkeypatch.setattr(mail, "connection", lambda a: pytest.fail("Unexpected network access"))
+    with pytest.raises(AgentError) as error:
+        mail.draft(account, ["person@example.com"], "Hi", "Hi")
+    assert error.value.code == "sender_name_required"
+
+
+def test_smtp_timeout_remains_an_uncertain_send(draft_transport, tmp_path, monkeypatch):
+    _, ref, digest = draft_transport
+
+    def timeout(*args, **kwargs):
+        raise TimeoutError("private SMTP response")
+
+    monkeypatch.setattr(SMTP, "send_message", timeout)
+    with pytest.raises(AgentError) as error:
+        mail.send_draft(ACCOUNT, ref, digest, tmp_path)
+    assert error.value.code == "send_unconfirmed"
+    with pytest.raises(AgentError) as retry:
+        mail.send_draft(ACCOUNT, ref, digest, tmp_path)
+    assert retry.value.code == "already_attempted"
+
+
 def test_calendar_time_rules():
     with pytest.raises(AgentError):
         calendar.parse_time("2026-09-22T10:00:00")
@@ -409,6 +525,7 @@ def test_send_alias_uses_alias_envelope_and_primary_login(draft_transport, tmp_p
         ACCOUNT.mail_address,
         ACCOUNT.password,
         sender_addresses=["alias@icloud.com"],
+        default_sender_address="alias@icloud.com",
     )
     envelopes = []
     monkeypatch.setattr(SMTP, "send_message", lambda self, msg, **kw: envelopes.append(kw) or {})

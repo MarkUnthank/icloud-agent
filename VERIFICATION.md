@@ -8,21 +8,80 @@ Tests use synthetic data and protocol doubles for Apple services. A real subproc
 exercises the stdio MCP handshake, tool discovery, and unauthenticated error path.
 The suite requires no Apple Account and performs no live mailbox/calendar writes.
 
-The v0.2.0 local suite has **37 passing tests on macOS / Python 3.14**. CI tests Python 3.11 and 3.14 on Linux. macOS tests are run locally to avoid
-GitHub-hosted macOS runner charges; the initial release also passed the former macOS CI jobs.
-Consult current CI runs for remote results. CI also checks lint/format, generated reference drift, local doc links,
-example schemas, version consistency, package building, and isolated wheel installation.
+The full suite passed **160 tests locally on macOS / Python 3.14** during merge
+preparation on September 21, 2026, including sender-name regression cases. Lint,
+formatting, generated references, 79 local documentation links, three example schemas,
+release metadata, and skill/plugin validation passed. Source and wheel builds passed.
 
-The v0.3.0 suite has **68 passing tests locally on macOS / Python 3.14**.
-A local pseudo-terminal walkthrough used synthetic credentials and mocked verification/
-storage to check prompt layout and hidden password entry. It did not authenticate with Apple.
+A fresh isolated wheel installation verified the current mail-search and sender-name
+schemas, plugin export, shared skill installation, and absence of the removed web-auth
+modules. Synthetic keyboard input verified the optional agent picker's live selection
+count and Enter-to-skip behavior. The app-password success card and skill-installation
+result were previously checked in Ghostty using the isolated setup preview.
+
+CI tests Python 3.11 and 3.14 on Linux. macOS tests run locally to avoid
+GitHub-hosted macOS runner charges. Consult current CI runs for remote results.
+CI also checks lint/format, generated reference drift, local doc links, example schemas,
+version consistency, package building, and isolated wheel installation.
+
+Agent-skill installer coverage includes the shared directory, relative agent links,
+explicit copies and symlink fallback, custom agent paths, unmanaged content preservation,
+migration of the old managed Codex copy, and rollback after a failed filesystem commit.
+Optional installation is tested separately from successful authentication and is omitted
+from JSON/piped login output.
+
+Earlier installation checks exercised the CLI in an isolated home directory: it installed the
+shared skill and a relative Claude Code link without invoking a subprocess. Local
+`setup --codex` migrated the previous managed skill, and Codex configuration readback
+confirmed the enabled connection used `/opt/homebrew/bin/icloud-agent mcp`.
+
+The current build and shared skill were installed locally and compared with source.
+Removed web-auth modules and their dependency were absent. The saved app-specific
+password passed a live IMAP/CalDAV check after the update. Account settings and send
+journal files were unchanged; only the obsolete web-session credential was removed.
+
+## Live evidence — September 21, 2026
+
+On Apple Silicon macOS / Python 3.14, discovery using the saved app-specific password
+returned ten email identities and four calendars. The identities included the configured
+senders and chosen default. This covers one account; CalDAV identities are not a
+guaranteed complete alias inventory or proof of sending permission for each address.
+An additional read using the same app-specific password returned the principal's
+human-readable `DAV:displayname`. This verifies an account-name suggestion, not per-alias
+Mail display-name preferences.
+
+The user supplied an agent's report of successful message reading, draft creation,
+draft read/hash verification, SMTP submission, Sent-folder readback, and draft removal.
+No recipients were refused; recipient-inbox delivery was not verified. That run needed
+a local runtime patch because `Drafts` lacked a special-use flag. `Sent Messages` did
+have its `\Sent` flag. The source now includes the fallback and regression tests.
+These are user-reported live results, not an independently repeated acceptance run.
+
+The same report exposed invalid conclusions from searches: IMAP expressions supplied
+in `query` were searched literally. The earlier claim of no unread mail on a given
+day and a claim about the newest message from a sender remain unverified. Dedicated
+filter fields and clearer skill instructions address the cause; offline tests do not
+establish the real mailbox's contents. No live mail or calendar writes were repeated
+while implementing these fixes.
+
+## Automated coverage
 
 Covered behavior:
 
+- Literal full-text queries; separate sender/subject/date filters; valid date bounds;
+  IMAPClient wire serialization; UID pagination and server internal dates.
+- Safe search-stage timeouts, explicit IMAP authentication rejection, and real local
+  lock contention. A failed search cannot return an empty success result.
+- Special-use flag precedence and exact iCloud folder-name fallbacks; ambiguous and
+  non-selectable folders rejected; unflagged Drafts with flagged Sent covered through
+  the draft/send flow. SMTP timeout still blocks a repeated attempt.
 - Space/arrow/Enter picker interaction, cancellation without saving, concurrent settings
   replacement, disabled calendar IDs, empty selections, and enabled sender discovery.
 - Disabled draft sender rejection before SMTP and alias envelope selection with the
   primary address used for SMTP authentication. These use protocol doubles.
+- Editable account-name suggestions, saved sender names, per-draft name overrides,
+  Unicode display names, and header-injection rejection. SMTP submission preserves the
+  reviewed draft's From header and uses the address alone for its envelope.
 
 - Terminal/JSON routing, explicit JSON in a TTY, usage exit codes, `NO_COLOR`, literal
   rendering of untrusted content, prompt routing, and failed-login behavior.
@@ -40,7 +99,7 @@ Covered behavior:
 
 The local installer has additionally been exercised on macOS without login. Codex
 configuration readback showed an enabled stdio connection using the installed absolute
-executable; the separately installed wheel exposed all 13 tools. Plugin/skill structure
+executable. Plugin/skill structure
 validators passed. These checks are not proof of live Apple behavior or use in ChatGPT.
 
 A v0.2.0 wheel was installed in a fresh environment and `setup` exported its plugin
@@ -58,11 +117,11 @@ GitHub-hosted macOS runner is used. The earlier clean-macOS-runner attempt was c
 
 ## What is still unverified
 
-- Live IMAP, SMTP, and CalDAV behavior against an authenticated iCloud account.
-- Real keychain persistence through the full authenticated setup flow.
+- Independent repetition of the reported live mail read/draft/send flow with this source build.
+- Calendar event mutations and live verification on additional accounts.
 - Native Windows/Linux credential stores and Windows installation.
 - ChatGPT desktop plugin installation, tool invocation, and account-specific availability.
-- Delivery, server-created Sent copies, and cleanup after a real send.
+- Recipient-inbox delivery and server-created Sent-copy behavior (separate from the tool's copy).
 
 ## Live acceptance procedure
 

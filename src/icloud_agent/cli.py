@@ -8,7 +8,7 @@ from pathlib import Path
 
 from rich_argparse import RawDescriptionRichHelpFormatter
 
-from . import __version__, auth, calendar, mail, terminal
+from . import __version__, agent_skills, auth, discovery, mail, terminal
 from .errors import AgentError, error_result
 from .operations import OPERATIONS, invoke
 
@@ -20,7 +20,7 @@ def emit(value):
 def check_account(account):
     with mail.connection(account):
         pass
-    return calendar.discover(account)
+    return discovery.account_resources(account)
 
 
 def login(no_browser=False):
@@ -34,27 +34,28 @@ def login(no_browser=False):
     terminal.heading(out, "connect")
     terminal.section(out, "1", "Your account")
 
-    def email(label, default=None):
-        while True:
-            value = terminal.ask(out, label, default)
-            try:
-                return mail.recipients([value])[0]
-            except AgentError:
-                out.print("  Enter a valid email address.", style="failure")
-
-    apple_account = email("Apple Account")
-    mail_address = email("iCloud Mail", apple_account)
+    while True:
+        value = terminal.ask(out, "iCloud Login Email Address")
+        try:
+            apple_account = mail.recipients([value])[0]
+            break
+        except AgentError:
+            out.print("  Enter a valid email address.", style="failure")
+    mail_address = apple_account
     out.print()
     terminal.section(out, "2", "App-specific password")
-    out.print("  account.apple.com", style="accent")
+    password_url = "https://account.apple.com/sign-in"
+    out.print("  " + password_url, style="accent")
     out.print("  Sign-In and Security → App-Specific Passwords")
     out.print('  Generate a password named "icloud-agent".', style="muted")
-    out.print("  Requires Apple Account two-factor authentication.\n", style="muted")
+    out.print("  Two-factor authentication required.\n", style="muted")
     if not no_browser:
-        webbrowser.open("https://account.apple.com/account/manage")
-    out.print("  Saved in your OS credential store.", style="muted")
+        out.print("  [Press enter to open in browser]", style="accent", end="")
+        out.input()
+        webbrowser.open(password_url)
+        out.print()
     while True:
-        password = terminal.ask(out, "Password (hidden)", password=True)
+        password = terminal.ask(out, "App-specific password", password=True)
         if re.fullmatch(r"[a-zA-Z]{4}(?:-[a-zA-Z]{4}){3}", password):
             break
         out.print("  Use the app-specific password: xxxx-xxxx-xxxx-xxxx", style="failure")
@@ -70,6 +71,8 @@ def login(no_browser=False):
         "mail_address": mail_address,
         "calendar_account": apple_account,
         "sender_addresses": account.sender_addresses,
+        "default_sender_address": account.default_sender_address,
+        "sender_name": account.sender_name,
         "calendar_ids": account.calendar_ids,
         "credential_storage": "OS credential store",
         "verified": ["IMAP", "CalDAV"],
@@ -80,39 +83,76 @@ def login(no_browser=False):
 def select_access(out, account, available, *, first_login=False):
     out.print()
     terminal.section(out, "3" if first_login else "1", "Sender addresses")
-    out.print(
-        "  Add existing aliases from iCloud Mail settings, separated by commas.", style="muted"
+    discovered = available["addresses"]
+    out.print("  Choose addresses you use with iCloud Mail.", style="muted")
+    out.print("  The agent can read the shared inbox for all aliases.\n", style="muted")
+    known = list(
+        dict.fromkeys(
+            item.casefold()
+            for item in [account.mail_address, *discovered, *account.known_sender_addresses]
+        )
     )
-    out.print("  Apple’s app-password connection does not provide an alias list.", style="muted")
-    known = list(dict.fromkeys([account.mail_address, *account.known_sender_addresses]))
-    while True:
-        raw = terminal.ask(out, "Additional aliases (optional)")
-        try:
-            additions = mail.recipients([item.strip() for item in raw.split(",")]) if raw else []
-            break
-        except AgentError:
-            out.print(
-                "  Enter email addresses separated by commas, or press Enter to skip.",
-                style="failure",
-            )
-    known = list(dict.fromkeys([item.casefold() for item in [*known, *additions]]))
     selected = [account.mail_address.casefold()] if first_login else account.sender_addresses
-    account.sender_addresses = terminal.choose(
-        out, "Enabled senders", [(x, x) for x in known], selected
-    )
+    while True:
+        selected = terminal.choose(
+            out,
+            "Enable for sending",
+            [(x, x) for x in known] + [("Add another address…", "add_address")],
+            selected,
+        )
+        if "add_address" not in selected:
+            break
+        selected = [item for item in selected if item != "add_address"]
+        out.print()
+        raw = terminal.ask(out, "Existing iCloud Mail address")
+        try:
+            address = mail.recipients([raw])[0].casefold()
+        except AgentError:
+            out.print("  Enter a valid email address.", style="failure")
+            out.print()
+            continue
+        if address not in known:
+            known.append(address)
+        if address not in selected:
+            selected.append(address)
+        out.print()
+    account.sender_addresses = selected
     account.known_sender_addresses = known
-    out.print("  Sender selection does not restrict reading the shared inbox.", style="muted")
+    if account.sender_addresses:
+        current_default = account.default_sender_address
+        if current_default not in account.sender_addresses:
+            current_default = account.sender_addresses[0]
+        out.print()
+        account.default_sender_address = terminal.pick_one(
+            out,
+            "Default sender",
+            [(address, address) for address in account.sender_addresses],
+            current_default,
+        )
+        out.print()
+        while True:
+            name = terminal.ask(
+                out, "Sender name", default=account.sender_name or available.get("display_name")
+            )
+            try:
+                account.sender_name = auth.validate_sender_name(name)
+                break
+            except AgentError as exc:
+                out.print("  " + str(exc), style="failure")
+    else:
+        account.default_sender_address = None
     out.print()
     terminal.section(out, "4" if first_login else "2", "Calendars")
-    if available:
-        names = [str(item["name"] or "Untitled calendar") for item in available]
+    calendars = available["calendars"]
+    if calendars:
+        names = [str(item["name"] or "Untitled calendar") for item in calendars]
         choices = [
             (name if names.count(name) == 1 else f"{name} · {item['id']}", item["id"])
-            for name, item in zip(names, available, strict=True)
+            for name, item in zip(names, calendars, strict=True)
         ]
         account.calendar_ids = terminal.choose(
             out,
-            "Enabled calendars",
+            "Enable calendars",
             choices,
             [] if first_login else account.calendar_ids,
         )
@@ -120,6 +160,7 @@ def select_access(out, account, available, *, first_login=False):
         account.calendar_ids = []
         out.print("  No calendars found.", style="muted")
     senders, calendars = len(account.sender_addresses), len(account.calendar_ids)
+    out.print()
     out.print(
         f"  {senders} sender{'s' if senders != 1 else ''} · "
         f"{calendars} calendar{'s' if calendars != 1 else ''} enabled",
@@ -137,8 +178,8 @@ def configure():
         original = auth.config_path().read_bytes()
     out = terminal.console(stderr=True)
     terminal.heading(out, "access")
-    with terminal.progress(out, "Loading calendars…"):
-        available = calendar.discover(account)
+    with terminal.progress(out, "Loading addresses and calendars…"):
+        available = discovery.account_resources(account)
     select_access(out, account, available)
     with auth.operation_lock():
         path = auth.config_path()
@@ -150,6 +191,8 @@ def configure():
     return {
         "saved": True,
         "sender_addresses": account.sender_addresses,
+        "default_sender_address": account.default_sender_address,
+        "sender_name": account.sender_name,
         "calendar_ids": account.calendar_ids,
     }
 
@@ -198,17 +241,29 @@ def parser():
     commands = p.add_subparsers(dest="command", required=True)
     a = commands.add_parser("auth", help="Save, check, or remove OS-stored credentials.")
     auth_commands = a.add_subparsers(dest="action", required=True)
-    auth_commands.add_parser("login", help="Connect your Apple Account.").add_argument(
+    auth_commands.add_parser("login", help="Connect with an app-specific password.").add_argument(
         "--no-browser", action="store_true"
     )
     auth_commands.add_parser("status", help="Check saved credentials or live access.").add_argument(
         "--check", action="store_true"
     )
-    auth_commands.add_parser("configure", help="Choose enabled senders and calendars.")
-    auth_commands.add_parser("logout", help="Remove this tool’s saved credentials.")
+    auth_commands.add_parser("configure", help="Choose your sender name, addresses, and calendars.")
+    auth_commands.add_parser("logout", help="Remove the app-password connection.")
     setup_parser = commands.add_parser("setup", help="Install bundled agent integration.")
     setup_parser.add_argument(
         "--codex", action="store_true", help="Register MCP and install the Codex skill."
+    )
+    setup_parser.add_argument(
+        "--skills", action="store_true", help="Install the bundled skill for local agents."
+    )
+    setup_parser.add_argument(
+        "--agent",
+        action="append",
+        choices=list(agent_skills.AGENT_NAMES),
+        help="Also install for this agent (repeatable; requires --skills).",
+    )
+    setup_parser.add_argument(
+        "--copy", action="store_true", help="Copy agent skills instead of linking them."
     )
     commands.add_parser("mcp", help="Run local stdio MCP; no port, tunnel, or background daemon.")
     schema = commands.add_parser(
@@ -265,7 +320,23 @@ def main():
         if args.command == "setup":
             from .setup import setup
 
-            result = {"ok": True, "data": setup(codex=args.codex)}
+            if args.agent and not args.skills:
+                command_parser.error("--agent requires --skills")
+            if args.copy and not (args.skills or args.codex):
+                command_parser.error("--copy requires --skills or --codex")
+            agents = args.agent or []
+            if (
+                args.skills
+                and args.agent is None
+                and not args.json
+                and sys.stdout.isatty()
+                and sys.stdin.isatty()
+            ):
+                agents = agent_skills.choose_agents(terminal.console(stderr=True))
+            result = {
+                "ok": True,
+                "data": setup(codex=args.codex, skills=args.skills, agents=agents, copy=args.copy),
+            }
         elif args.command == "auth":
             if args.action == "login":
                 data = login(args.no_browser)
@@ -283,6 +354,8 @@ def main():
                     "mail_address": account.mail_address,
                     "services_checked": args.check,
                     "sender_addresses": account.sender_addresses,
+                    "default_sender_address": account.default_sender_address,
+                    "sender_name": account.sender_name,
                     "calendar_ids": account.calendar_ids,
                 }
             result = {"ok": True, "data": data}
@@ -311,10 +384,14 @@ def main():
             AgentError("cancelled", "Input closed. Run the command again to continue.")
         )
     except KeyboardInterrupt:
+        operation = OPERATIONS.get(getattr(args, "operation", None))
+        interrupted_write = operation and operation.write and not args.dry_run
         result = error_result(
             AgentError(
                 "cancelled",
-                "Cancelled. If a write was in progress, read back its state before retrying.",
+                "Check the result before retrying this write."
+                if interrupted_write
+                else "Cancelled.",
             )
         )
     except Exception as exc:
@@ -323,6 +400,13 @@ def main():
         emit(result)
     else:
         terminal.result(terminal.console(stderr=not result["ok"]), result, args)
+        if (
+            result["ok"]
+            and sys.stdin.isatty()
+            and args.command == "auth"
+            and args.action == "login"
+        ):
+            agent_skills.offer(terminal.console(stderr=True))
     if not result["ok"]:
         raise SystemExit(1)
 

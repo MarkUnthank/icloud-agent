@@ -1,6 +1,9 @@
 {
   "folder": "INBOX",
-  "query": "invoice",
+  "sender": "person@example.com",
+  "subject": "invoice",
+  "since": "2026-09-01",
+  "before": "2026-10-01",
   "unread": true,
   "limit": 10
 }

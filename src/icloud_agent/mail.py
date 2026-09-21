@@ -5,24 +5,60 @@ import re
 import smtplib
 import ssl
 from contextlib import contextmanager
+from datetime import date
 from email import policy
+from email.headerregistry import Address
 from email.message import EmailMessage
 from email.parser import BytesParser
 from email.utils import formatdate, getaddresses, make_msgid
 
 from imapclient import IMAPClient
+from imapclient.exceptions import LoginError
 
-from .auth import Account
+from .auth import Account, validate_sender_name
 from .errors import AgentError
 
 MAX_MESSAGE = 20 * 1024 * 1024
+IMAP_TIMEOUT = 30
 
 
 @contextmanager
 def connection(account: Account):
-    with IMAPClient("imap.mail.me.com", ssl=True, timeout=30) as client:
-        client.login(account.mail_address, account.password)
-        yield client
+    stage = "connect"
+    try:
+        with IMAPClient("imap.mail.me.com", ssl=True, timeout=IMAP_TIMEOUT) as client:
+            client.normalise_times = False
+            stage = "authenticate"
+            client.login(account.mail_address, account.password)
+            stage = "request"
+            yield client
+    except LoginError:
+        raise AgentError(
+            "authentication_failed",
+            "iCloud rejected the Mail login. Check your login email and app-specific password with icloud-agent auth login.",
+            service="imap",
+            stage="authenticate",
+        ) from None
+    except TimeoutError:
+        raise imap_timeout(stage) from None
+
+
+def imap_timeout(stage):
+    return AgentError(
+        "operation_timeout",
+        "iCloud Mail did not respond within 30 seconds.",
+        service="imap",
+        stage=stage,
+        timeout_seconds=IMAP_TIMEOUT,
+    )
+
+
+@contextmanager
+def search_step(stage):
+    try:
+        yield
+    except TimeoutError:
+        raise imap_timeout(stage) from None
 
 
 def encode_ref(folder: str, validity: int, uid: int) -> str:
@@ -52,12 +88,25 @@ def select_ref(client, ref: str, readonly: bool = True):
 
 
 def special_folder(client, flag: bytes) -> str:
-    matches = [name for flags, _, name in client.list_folders() if flag in flags]
-    if len(matches) != 1:
+    folders = [
+        (set(value.lower() for value in flags), name) for flags, _, name in client.list_folders()
+    ]
+    matches = [(flags, name) for flags, name in folders if flag.lower() in flags]
+    if not matches:
+        expected = {
+            b"\\Drafts": "Drafts",
+            b"\\Sent": "Sent Messages",
+            b"\\Trash": "Deleted Messages",
+        }.get(flag)
+        matches = [
+            (flags, name) for flags, name in folders if expected is not None and name == expected
+        ]
+    if len(matches) != 1 or b"\\noselect" in matches[0][0]:
         raise AgentError(
-            "folder_not_found", "Could not uniquely discover the iCloud special folder."
+            "folder_not_found",
+            "Could not uniquely discover a selectable iCloud special folder. Run icloud-agent mail folders to inspect the available folders.",
         )
-    return matches[0]
+    return matches[0][1]
 
 
 def folders(account: Account):
@@ -75,30 +124,44 @@ def search(
     unread: bool = False,
     limit: int = 20,
     before_uid: int | None = None,
+    sender: str | None = None,
+    subject: str | None = None,
+    since: str | None = None,
+    before: str | None = None,
 ):
     with connection(account) as c:
-        status = c.select_folder(folder, readonly=True)
+        with search_step("select_folder"):
+            status = c.select_folder(folder, readonly=True)
         criteria = ["UNSEEN"] if unread else ["ALL"]
         if query:
             criteria += ["TEXT", query]
+        if sender:
+            criteria += ["FROM", sender]
+        if subject:
+            criteria += ["SUBJECT", subject]
+        if since:
+            criteria += ["SINCE", date.fromisoformat(since)]
+        if before:
+            criteria += ["BEFORE", date.fromisoformat(before)]
         if before_uid is not None:
             if before_uid <= 1:
-                return {"messages": [], "next_before_uid": None}
+                return {"messages": [], "next_before_uid": None, "order": "uid_desc"}
             criteria += ["UID", f"1:{before_uid - 1}"]
-        ids = sorted(c.search(criteria, charset="UTF-8"), reverse=True)
+        with search_step("search"):
+            ids = sorted(c.search(criteria, charset="UTF-8"), reverse=True)
         chosen = ids[:limit]
-        data = (
-            c.fetch(
-                chosen,
-                [
-                    "BODY.PEEK[HEADER.FIELDS (FROM TO SUBJECT DATE MESSAGE-ID)]",
-                    "FLAGS",
-                    "RFC822.SIZE",
-                ],
-            )
-            if chosen
-            else {}
-        )
+        data = {}
+        if chosen:
+            with search_step("fetch_headers"):
+                data = c.fetch(
+                    chosen,
+                    [
+                        "BODY.PEEK[HEADER.FIELDS (FROM TO SUBJECT DATE MESSAGE-ID)]",
+                        "FLAGS",
+                        "RFC822.SIZE",
+                        "INTERNALDATE",
+                    ],
+                )
         result = []
         for uid in chosen:
             row = data.get(uid)
@@ -114,11 +177,18 @@ def search(
                     "from": str(msg.get("From", "")),
                     "to": str(msg.get("To", "")),
                     "date": str(msg.get("Date", "")),
+                    "internal_date": row[b"INTERNALDATE"].isoformat()
+                    if row.get(b"INTERNALDATE")
+                    else None,
                     "flags": [f.decode() for f in row.get(b"FLAGS", [])],
                     "bytes": row.get(b"RFC822.SIZE"),
                 }
             )
-        return {"messages": result, "next_before_uid": chosen[-1] if len(ids) > limit else None}
+        return {
+            "messages": result,
+            "next_before_uid": chosen[-1] if len(ids) > limit else None,
+            "order": "uid_desc",
+        }
 
 
 def fetch_message(c, uid: int) -> bytes:
@@ -182,7 +252,7 @@ def recipients(values: list[str]) -> list[str]:
 
 def enabled_sender(account: Account, address: str | None):
     if address is None:
-        address = next(iter(account.sender_addresses), None)
+        address = account.default_sender_address
     if address is None or address.casefold() not in {
         item.casefold() for item in account.sender_addresses
     }:
@@ -200,12 +270,15 @@ def draft(
     cc: list[str] | None = None,
     reply_to_id: str | None = None,
     from_address: str | None = None,
+    from_name: str | None = None,
 ):
     recipients(to + (cc or []))
     if not to:
         raise AgentError("invalid_address", "At least one To recipient is required.")
     msg = EmailMessage(policy=policy.SMTP)
-    msg["From"] = enabled_sender(account, from_address)
+    sender = enabled_sender(account, from_address)
+    name = validate_sender_name(from_name if from_name is not None else account.sender_name)
+    msg["From"] = Address(display_name=name, addr_spec=sender)
     msg["To"] = ", ".join(to)
     if cc:
         msg["Cc"] = ", ".join(cc)
