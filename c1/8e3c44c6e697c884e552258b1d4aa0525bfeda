@@ -1,0 +1,56 @@
+docs/security.md
+  s_6fe6e02598edf3::t_4f36ff34ed72cb 31
+src/icloud_agent/terminal.py
+  s_6fe6e02598edf3::t_30338424b09036 181-207
+src/icloud_agent/cli.py
+  s_6fe6e02598edf3::t_a166d027a2803e 45
+  s_6fe6e02598edf3::t_30338424b09036 46,73,105-116,166,300
+docs/authentication-design.md
+  s_6fe6e02598edf3::t_4f36ff34ed72cb 25-26
+tests/test_terminal.py
+  s_6fe6e02598edf3::t_e2677663800a0c 111,124
+  s_6fe6e02598edf3::t_a166d027a2803e 123
+src/icloud_agent/auth.py
+  s_6fe6e02598edf3::t_30338424b09036 52,70,108-114,122
+docs/setup.md
+  s_6fe6e02598edf3::t_a166d027a2803e 69
+  s_6fe6e02598edf3::t_e2677663800a0c 70-72,77-79
+tests/test_access.py
+  s_6fe6e02598edf3::t_e2677663800a0c 23,120-131
+  s_6fe6e02598edf3::t_beade4021ebc90 132-133
+src/icloud_agent/resources/plugin/skills/icloud-agent/SKILL.md
+  s_6fe6e02598edf3::t_4f36ff34ed72cb 27
+src/icloud_agent/operations.py
+  s_6fe6e02598edf3::t_30338424b09036 106
+  s_6fe6e02598edf3::t_4f36ff34ed72cb 129
+tests/test_core.py
+  s_6fe6e02598edf3::t_e2677663800a0c 20,414
+  s_6fe6e02598edf3::t_4f36ff34ed72cb 54
+docs/usage.md
+  s_6fe6e02598edf3::t_e2677663800a0c 57-58
+CHANGELOG.md
+  s_6fe6e02598edf3::t_a166d027a2803e 11
+  s_6fe6e02598edf3::t_e2677663800a0c 9-10
+src/icloud_agent/mail.py
+  s_6fe6e02598edf3::t_30338424b09036 185
+docs/reference.md
+  s_6fe6e02598edf3::t_1ee85275f476d5 81
+docs/tool-schemas.json
+  s_6fe6e02598edf3::t_1c53d8d048c028 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c18e3c44c6e697c884e552258b1d4aa0525bfeda",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
