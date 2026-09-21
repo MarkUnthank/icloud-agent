@@ -189,12 +189,12 @@ def choose_agents(out):
     out.print("  Shared · Codex, Cursor, Gemini CLI, OpenCode", style="accent")
     out.print("  " + terminal.literal(canonical_path()), style="muted")
     out.print()
-    paths = agent_paths()
     return terminal.choose(
         out,
         "Also install for",
         [(name, key) for key, name in LINKED_AGENTS.items()],
-        [key for key, path in paths.items() if path.parent.is_dir()],
+        [],
+        optional=True,
     )
 
 

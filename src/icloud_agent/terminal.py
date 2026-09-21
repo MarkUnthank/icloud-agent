@@ -223,19 +223,41 @@ def result(out, payload, args):
     out.print()
 
 
-def choose(out, title, choices, selected):
+def choose(out, title, choices, selected, *, optional=False):
     """Use the same stderr surface as login; never write prompt UI to JSON stdout."""
     import questionary
+    from prompt_toolkit.filters import is_done
+    from prompt_toolkit.layout import ConditionalContainer, HSplit, Layout, Window
+    from prompt_toolkit.layout.controls import FormattedTextControl
     from prompt_toolkit.output import ColorDepth
     from prompt_toolkit.output.defaults import create_output
 
-    return questionary.checkbox(
+    selection_count = sum(value in selected for _, value in choices)
+
+    def track_selection(values):
+        nonlocal selection_count
+        selection_count = len(values)
+        return True
+
+    def selection_hint():
+        action = "Enter continue" if selection_count else "Enter skip extras"
+        return [
+            ("class:answer", f"  {selection_count}/{len(choices)} selected"),
+            ("class:instruction", f" · {action}"),
+        ]
+
+    question = questionary.checkbox(
         title,
         choices=[
             questionary.Choice(literal(name), value=value, checked=value in selected)
             for name, value in choices
         ],
-        instruction="(↑↓ move · Space toggle · Enter continue)",
+        instruction=(
+            "(↑↓ move · Space toggle)"
+            if optional
+            else "(↑↓ move · Space toggle · Enter continue)"
+        ),
+        validate=track_selection,
         style=questionary.Style(
             [
                 ("qmark", "fg:ansicyan"),
@@ -250,7 +272,22 @@ def choose(out, title, choices, selected):
         else questionary.Style([]),
         output=create_output(stdout=out.file),
         color_depth=ColorDepth.DEPTH_1_BIT if "NO_COLOR" in os.environ else None,
-    ).unsafe_ask()
+    )
+    if optional:
+        layout = question.application.layout
+        question.application.layout = Layout(
+            HSplit(
+                [
+                    ConditionalContainer(
+                        Window(FormattedTextControl(selection_hint), height=2),
+                        filter=~is_done,
+                    ),
+                    layout.container,
+                ]
+            ),
+            focused_element=layout.current_control,
+        )
+    return question.unsafe_ask()
 
 
 def pick_one(out, title, choices, selected):

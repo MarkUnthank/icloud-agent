@@ -6,6 +6,8 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Start optional agent selections unchecked. Show a live selection count above the
+  picker and **Enter skip extras** when no additional agents are selected.
 - Have the agent ask which enabled calendar to use before creating an event when the
   user has not specified a destination.
 - Prefill an editable **Sender name** from the iCloud CalDAV account during login and

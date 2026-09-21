@@ -71,8 +71,11 @@ icloud-agent setup --skills
 The shared skill goes in `~/.agents/skills/icloud-agent`, following the global layout
 used by [Skills](https://github.com/vercel-labs/skills). Codex, Cursor, Gemini CLI,
 OpenCode, GitHub Copilot, Cline, and other agents that read the shared directory can
-use it there. Use **Space** and **Enter** to select additional agents. Supported links
-include Claude Code, Continue, Goose, OpenClaw, OpenHands, Roo Code, and Windsurf.
+use it there. Additional agents start unchecked, with a live selection count above
+the picker. Use **Space** to toggle agents and **Enter** to continue. Leave the count
+at zero and press **Enter** to skip the extras; the shared skill is still installed.
+Supported links include Claude Code, Continue, Goose, OpenClaw, OpenHands, Roo Code,
+and Windsurf.
 
 The installer copies the skill bundled with your installed CLI. It runs locally in
 Python; it does not invoke `npx`, download skills, or require Node/npm. Additional
