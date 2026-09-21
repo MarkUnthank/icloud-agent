@@ -253,9 +253,7 @@ def choose(out, title, choices, selected, *, optional=False):
             for name, value in choices
         ],
         instruction=(
-            "(↑↓ move · Space toggle)"
-            if optional
-            else "(↑↓ move · Space toggle · Enter continue)"
+            "(↑↓ move · Space toggle)" if optional else "(↑↓ move · Space toggle · Enter continue)"
         ),
         validate=track_selection,
         style=questionary.Style(

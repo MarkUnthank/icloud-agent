@@ -8,10 +8,16 @@ Tests use synthetic data and protocol doubles for Apple services. A real subproc
 exercises the stdio MCP handshake, tool discovery, and unauthenticated error path.
 The suite requires no Apple Account and performs no live mailbox/calendar writes.
 
-The last completed suite, before the sender-name change, passed **146 tests locally on macOS / Python 3.14**.
-Sender-name regression cases have been added; running them is deferred until merge preparation.
-The app-password success card, agent picker, and skill-installation result were also
-checked in Ghostty using the isolated setup preview with synthetic data.
+The full suite passed **160 tests locally on macOS / Python 3.14** during merge
+preparation on September 21, 2026, including sender-name regression cases. Lint,
+formatting, generated references, 79 local documentation links, three example schemas,
+release metadata, and skill/plugin validation passed. Source and wheel builds passed.
+
+A fresh isolated wheel installation verified the current mail-search and sender-name
+schemas, plugin export, shared skill installation, and absence of the removed web-auth
+modules. Synthetic keyboard input verified the optional agent picker's live selection
+count and Enter-to-skip behavior. The app-password success card and skill-installation
+result were previously checked in Ghostty using the isolated setup preview.
 
 CI tests Python 3.11 and 3.14 on Linux. macOS tests run locally to avoid
 GitHub-hosted macOS runner charges. Consult current CI runs for remote results.
@@ -73,6 +79,9 @@ Covered behavior:
   replacement, disabled calendar IDs, empty selections, and enabled sender discovery.
 - Disabled draft sender rejection before SMTP and alias envelope selection with the
   primary address used for SMTP authentication. These use protocol doubles.
+- Editable account-name suggestions, saved sender names, per-draft name overrides,
+  Unicode display names, and header-injection rejection. SMTP submission preserves the
+  reviewed draft's From header and uses the address alone for its envelope.
 
 - Terminal/JSON routing, explicit JSON in a TTY, usage exit codes, `NO_COLOR`, literal
   rendering of untrusted content, prompt routing, and failed-login behavior.

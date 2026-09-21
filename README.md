@@ -18,7 +18,7 @@ talks directly to Apple.
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-86b8b5" alt="MIT license"></a>
   <a href="docs/clients.md"><img src="https://img.shields.io/badge/MCP-local%20stdio-24292f" alt="Local stdio MCP"></a>
-  <a href="VERIFICATION.md"><img src="https://img.shields.io/badge/status-alpha-e2af68" alt="Alpha: write verification pending"></a>
+  <a href="VERIFICATION.md"><img src="https://img.shields.io/badge/status-beta-e2af68" alt="Beta"></a>
 </p>
 
 <p align="center">
@@ -66,7 +66,7 @@ process on your computer.
 Your computer needs to be awake, online, and able to unlock its credential store.
 [Agent and plugin setup →](docs/clients.md)
 
-> **Alpha.** App-password discovery has live evidence; draft and send checks have been
+> **Beta.** App-password discovery has live evidence; draft and send checks have been
 > reported by a user. Calendar writes, recipient delivery, and client compatibility
 > need further verification. See the [verification record](VERIFICATION.md).
 

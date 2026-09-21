@@ -6,6 +6,8 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Mark the project as beta in the README and package metadata; retain the documented
+  live verification limits.
 - Start optional agent selections unchecked. Show a live selection count above the
   picker and **Enter skip extras** when no additional agents are selected.
 - Have the agent ask which enabled calendar to use before creating an event when the
