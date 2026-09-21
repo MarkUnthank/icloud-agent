@@ -1,0 +1,39 @@
+CHANGELOG.md
+  s_6fe6e02598edf3::t_5278fc1597c73f 9-14
+VERIFICATION.md
+  s_6fe6e02598edf3::t_d7df7dfa61d689 16-19,22-23
+docs/architecture.md
+  s_6fe6e02598edf3::t_a5fa65431d66db 28,75-77
+docs/authentication-design.md
+  s_6fe6e02598edf3::t_eb7106aa4ea440 1-78
+docs/setup.md
+  s_6fe6e02598edf3::t_b8b85303b8d8af 54,69-73
+docs/usage.md
+  s_6fe6e02598edf3::t_dcc021995310b6 166-181
+pyproject.toml
+  s_6fe6e02598edf3::t_69b73c458eb0c1 26-27
+src/icloud_agent/cli.py
+  s_6fe6e02598edf3::t_1e70c3eaeee44d 9-11,30-31,33-53,56-61,63-65,78-110,112-115,117,122-128,142,174-178,225-228,238-241
+src/icloud_agent/resources/plugin/skills/icloud-agent/SKILL.md
+  s_6fe6e02598edf3::t_ab2bedde08a161 9,22
+src/icloud_agent/terminal.py
+  s_6fe6e02598edf3::t_2d2f05ca856a63 1-150
+tests/test_terminal.py
+  s_6fe6e02598edf3::t_3d014d96383a34 1-156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dbe901894d2921808e1e42820ac37ffa8bba5f23",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
