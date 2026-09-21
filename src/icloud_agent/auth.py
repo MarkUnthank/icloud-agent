@@ -46,6 +46,9 @@ class Account:
     apple_account: str
     mail_address: str
     password: str = field(repr=False)
+    sender_addresses: list[str] = field(default_factory=list)
+    calendar_ids: list[str] = field(default_factory=list)
+    known_sender_addresses: list[str] = field(default_factory=list)
 
 
 def save(account: Account):
@@ -59,7 +62,14 @@ def save(account: Account):
         with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, delete=False) as f:
             temp = Path(f.name)
             json.dump(
-                {"apple_account": account.apple_account, "mail_address": account.mail_address}, f
+                {
+                    "apple_account": account.apple_account,
+                    "mail_address": account.mail_address,
+                    "sender_addresses": account.sender_addresses,
+                    "calendar_ids": account.calendar_ids,
+                    "known_sender_addresses": account.known_sender_addresses,
+                },
+                f,
             )
             f.flush()
             os.fsync(f.fileno())
@@ -81,12 +91,26 @@ def load() -> Account:
     if not path.exists():
         raise AgentError("not_authenticated", "Run icloud-agent auth login in your terminal once.")
     data = json.loads(path.read_text())
+    for key in ("sender_addresses", "calendar_ids", "known_sender_addresses"):
+        if (
+            key not in data
+            or not isinstance(data[key], list)
+            or any(not isinstance(value, str) for value in data[key])
+        ):
+            raise AgentError("setup_required", "Run icloud-agent auth login to choose access.")
     password = credential_store().get_password(SERVICE, data["apple_account"])
     if not password:
         raise AgentError(
             "not_authenticated", "Saved credential is missing. Run icloud-agent auth login."
         )
-    return Account(data["apple_account"], data["mail_address"], password)
+    return Account(
+        data["apple_account"],
+        data["mail_address"],
+        password,
+        data["sender_addresses"],
+        data["calendar_ids"],
+        data["known_sender_addresses"],
+    )
 
 
 def logout():

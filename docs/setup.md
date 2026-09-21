@@ -26,11 +26,11 @@ not Homebrew/core. The CLI remains an early release with [these verification lim
 Install the published wheel directly; no clone needed. Choose one:
 
 ```sh
-uv tool install https://github.com/MarkUnthank/icloud-agent/releases/download/v0.2.0/icloud_agent-0.2.0-py3-none-any.whl
+uv tool install https://github.com/MarkUnthank/icloud-agent/releases/download/v0.3.0/icloud_agent-0.3.0-py3-none-any.whl
 ```
 
 ```sh
-pipx install https://github.com/MarkUnthank/icloud-agent/releases/download/v0.2.0/icloud_agent-0.2.0-py3-none-any.whl
+pipx install https://github.com/MarkUnthank/icloud-agent/releases/download/v0.3.0/icloud_agent-0.3.0-py3-none-any.whl
 ```
 
 These methods require Python 3.11+ (uv can manage Python for you). Then run the same
@@ -72,11 +72,18 @@ icloud-agent auth login
 3. In the Apple page that opens, go to **Sign-In and Security → App-Specific Passwords**.
 4. Generate a password named `icloud-agent`.
 5. Paste the app-specific password into the hidden prompt.
+6. Add any existing sender aliases, separated by commas, or press Enter to skip.
+7. Choose enabled senders and calendars: **arrow keys** move, **Space** toggles, and
+   **Enter** saves. Calendars start unchecked; choose those you want the agent to access.
+   An empty selection enables none. Ctrl-C cancels without saving changes.
 
 The CLI validates IMAP and CalDAV before saving credentials. It does not send a test
 email; SMTP authentication is checked only during an actual send. It uses your
-configured mail address as the sender. Sending from additional aliases/custom-domain
-identities is not implemented as a separate feature.
+configured mail address to authenticate. Enabled aliases can be used as senders.
+Calendar names are discovered automatically. Aliases must be entered manually: the
+app-password connection does not provide a documented alias inventory. Only add
+addresses already configured for your mailbox in iCloud Mail; Apple checks sending
+permission during SMTP submission. Login does not verify aliases by sending a message.
 
 The password is stored in the OS credential store, never in the account JSON or plugin
 configuration. Subsequent invocations reuse it. Use `auth login --no-browser` to open
@@ -89,6 +96,7 @@ See [Apple's instructions](https://support.apple.com/en-us/102654).
 ## Check or change access
 
 ```sh
+icloud-agent auth configure       # change enabled senders and calendars
 icloud-agent auth status          # saved account and credential presence
 icloud-agent auth status --check  # live IMAP + CalDAV check
 icloud-agent auth logout          # remove the active local credential/config
@@ -97,6 +105,11 @@ icloud-agent auth logout          # remove the active local credential/config
 `authenticated_locally:true` means a credential exists; only `--check` tests it against
 Apple. One active account is supported. Running login for a different account replaces
 the active config and removes the previous account's saved credential from this tool.
+
+`auth configure` reuses the stored password, loads current calendars, and restores your
+choices. Newly discovered calendars remain unchecked. Sender choices control draft
+creation and sending, including previously saved drafts; they do not filter the shared
+inbox. `mail senders` lists enabled From addresses for users and agents.
 
 Local logout does not revoke the password at Apple. Revoke it at
 [account.apple.com](https://account.apple.com/) to invalidate it remotely. Never paste
@@ -109,6 +122,9 @@ brew update
 brew upgrade MarkUnthank/tap/icloud-agent
 icloud-agent setup --codex
 ```
+
+Upgrading from 0.2.x requires one new `auth login` to explicitly choose access; older
+account settings do not silently grant access to every calendar.
 
 Rerun setup to refresh the bundled skill/plugin, then restart your agent. Credentials
 and the send journal live outside the package and are retained. For uv/pipx, reinstall

@@ -26,7 +26,7 @@ flowchart LR
 |---|---|
 | `cli.py` | Commands, JSON input/output, interactive setup |
 | `terminal.py` | Human terminal presentation, prompts, and progress |
-| `operations.py` | Strict Pydantic schemas, operation metadata, dispatch, mutation lock |
+| `operations.py` | Strict Pydantic schemas, operation metadata, dispatch, access policy and operation lock |
 | `mcp_server.py` | Official Python MCP SDK, stdio transport, tool annotations |
 | `auth.py` | Native credential backend, private config, account lifecycle |
 | `mail.py` | IMAPClient, Python email/SMTP, message references, send journal |
@@ -49,7 +49,7 @@ is present. Each protocol operation opens a connection and closes it afterward.
   calendar on an allowed HTTPS iCloud host. Redirects are checked before following.
 - Calendar updates/deletes require the last-read ETag and an HTTP conditional write.
   Creates use If-None-Match. Unsupported series/meeting edits fail explicitly.
-- Local writes share an operation lock. This cannot prevent another calendar/mail
+- Operations and configuration saves share an operation lock. This cannot prevent another calendar/mail
   client from editing data; server preconditions and readbacks address that boundary.
 - Unexpected errors omit raw protocol details. Returned mail/calendar contents are
   still private user data and remain untrusted as instructions.
@@ -73,5 +73,5 @@ RSVPs, attachment transfer, folder creation, multi-account routing, and contacts
 not. Changes in these areas should start with a focused issue describing the intended
 user behavior and protocol requirements, not a promise of an imminent feature.
 
-The proposed [guided account setup](authentication-design.md) records the intended
-alias/calendar picker and the authentication questions that must be resolved first.
+The [authentication decisions](authentication-design.md) explain the app-password
+flow, alias limitation, and how access selections are enforced.

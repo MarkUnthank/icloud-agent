@@ -54,6 +54,11 @@ For a reply, add `reply_to_id` with the original message's ID and select recipie
 explicitly. The tool adds reply-thread headers; it does not infer recipients or quote
 the original body. `cc` is supported; draft creation has no Bcc input in this release.
 
+Run `icloud-agent mail senders` to list enabled sender addresses. Set `from_address`
+in draft input to choose one; omitting it uses the first enabled address. If no senders
+are enabled, drafting and sending are disabled. Apple validates whether your account
+can send from a configured alias during SMTP submission.
+
 Draft creation saves to iCloud Drafts and returns a draft `id` when Apple provides an
 APPENDUID response. If it returns only `folder` and `message_id`, the draft was saved:
 search that folder for its Message-ID to obtain the ID rather than creating it again.
@@ -67,7 +72,7 @@ JSON
 ```
 
 Sending accepts only a message in the server's Drafts folder whose From address
-matches the configured iCloud mail address. A changed draft produces `draft_changed`;
+is currently enabled in `auth configure`. A changed draft produces `draft_changed`;
 read and reassess it before sending.
 
 A successful submission can return:
@@ -110,6 +115,9 @@ mail. Search the destination for the message's new ID after a move.
 ```sh
 icloud-agent calendar list
 ```
+
+Only enabled calendars are listed or accessible. Run `icloud-agent auth configure`
+to change selections; passing an old event ID cannot bypass a disabled calendar.
 
 Use an exact returned calendar ID and a bounded range:
 

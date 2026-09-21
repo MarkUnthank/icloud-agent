@@ -69,9 +69,30 @@ def connection(account: Account):
         yield client
 
 
-def calendars(account: Account):
+def discover(account: Account):
     with connection(account) as c:
         return [{"id": trusted_url(str(x.url)), "name": x.name} for x in c.principal().calendars()]
+
+
+def calendars(account: Account):
+    return [item for item in discover(account) if item["id"] in account.calendar_ids]
+
+
+def check_access(account: Account, values: dict):
+    calendar_id = values.get("calendar_id")
+    if "event_id" in values:
+        try:
+            calendar_id, _ = json.loads(base64.urlsafe_b64decode(values["event_id"]))
+            if not isinstance(calendar_id, str):
+                raise ValueError()
+        except Exception:
+            raise AgentError(
+                "invalid_id", "Use an event ID returned by calendar search/read/create."
+            ) from None
+    if calendar_id is not None and calendar_id not in account.calendar_ids:
+        raise AgentError(
+            "calendar_disabled", "Calendar is not enabled. Run icloud-agent auth configure."
+        )
 
 
 def resolve_calendar(client, calendar_id: str):

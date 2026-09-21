@@ -20,7 +20,7 @@ def emit(value):
 def check_account(account):
     with mail.connection(account):
         pass
-    calendar.calendars(account)
+    return calendar.discover(account)
 
 
 def login(no_browser=False):
@@ -38,8 +38,7 @@ def login(no_browser=False):
         while True:
             value = terminal.ask(out, label, default)
             try:
-                mail.recipients([value])
-                return value
+                return mail.recipients([value])[0]
             except AgentError:
                 out.print("  Enter a valid email address.", style="failure")
 
@@ -62,16 +61,94 @@ def login(no_browser=False):
     account = auth.Account(apple_account, mail_address, password)
     out.print()
     with terminal.progress(out, "Checking Mail and Calendar…"):
-        check_account(account)
+        available = check_account(account)
+    select_access(out, account, available, first_login=True)
     with auth.operation_lock():
         auth.save(account)
     return {
         "connected": True,
         "mail_address": mail_address,
         "calendar_account": apple_account,
+        "sender_addresses": account.sender_addresses,
+        "calendar_ids": account.calendar_ids,
         "credential_storage": "OS credential store",
         "verified": ["IMAP", "CalDAV"],
         "note": "Sending uses the same password; SMTP is checked when sending.",
+    }
+
+
+def select_access(out, account, available, *, first_login=False):
+    out.print()
+    terminal.section(out, "3" if first_login else "1", "Sender addresses")
+    out.print(
+        "  Add existing aliases from iCloud Mail settings, separated by commas.", style="muted"
+    )
+    out.print("  Apple’s app-password connection does not provide an alias list.", style="muted")
+    known = list(dict.fromkeys([account.mail_address, *account.known_sender_addresses]))
+    while True:
+        raw = terminal.ask(out, "Additional aliases (optional)")
+        try:
+            additions = mail.recipients([item.strip() for item in raw.split(",")]) if raw else []
+            break
+        except AgentError:
+            out.print(
+                "  Enter email addresses separated by commas, or press Enter to skip.",
+                style="failure",
+            )
+    known = list(dict.fromkeys([item.casefold() for item in [*known, *additions]]))
+    selected = [account.mail_address.casefold()] if first_login else account.sender_addresses
+    account.sender_addresses = terminal.choose(
+        out, "Enabled senders", [(x, x) for x in known], selected
+    )
+    account.known_sender_addresses = known
+    out.print("  Sender selection does not restrict reading the shared inbox.", style="muted")
+    out.print()
+    terminal.section(out, "4" if first_login else "2", "Calendars")
+    if available:
+        names = [str(item["name"] or "Untitled calendar") for item in available]
+        choices = [
+            (name if names.count(name) == 1 else f"{name} · {item['id']}", item["id"])
+            for name, item in zip(names, available, strict=True)
+        ]
+        account.calendar_ids = terminal.choose(
+            out,
+            "Enabled calendars",
+            choices,
+            [] if first_login else account.calendar_ids,
+        )
+    else:
+        account.calendar_ids = []
+        out.print("  No calendars found.", style="muted")
+    out.print(
+        f"  {len(account.sender_addresses)} senders · {len(account.calendar_ids)} calendars enabled",
+        style="accent",
+    )
+
+
+def configure():
+    if not sys.stdin.isatty():
+        raise AgentError(
+            "interactive_setup_required", "Run icloud-agent auth configure in your terminal."
+        )
+    with auth.operation_lock():
+        account = auth.load()
+        original = auth.config_path().read_bytes()
+    out = terminal.console(stderr=True)
+    terminal.heading(out, "access")
+    with terminal.progress(out, "Loading calendars…"):
+        available = calendar.discover(account)
+    select_access(out, account, available)
+    with auth.operation_lock():
+        path = auth.config_path()
+        if not path.exists() or path.read_bytes() != original:
+            raise AgentError(
+                "config_changed", "Account settings changed. Run auth configure again."
+            )
+        auth.save(account)
+    return {
+        "saved": True,
+        "sender_addresses": account.sender_addresses,
+        "calendar_ids": account.calendar_ids,
     }
 
 
@@ -125,6 +202,7 @@ def parser():
     auth_commands.add_parser("status", help="Check saved credentials or live access.").add_argument(
         "--check", action="store_true"
     )
+    auth_commands.add_parser("configure", help="Choose enabled senders and calendars.")
     auth_commands.add_parser("logout", help="Remove this tool’s saved credentials.")
     setup_parser = commands.add_parser("setup", help="Install bundled agent integration.")
     setup_parser.add_argument(
@@ -189,6 +267,8 @@ def main():
         elif args.command == "auth":
             if args.action == "login":
                 data = login(args.no_browser)
+            elif args.action == "configure":
+                data = configure()
             elif args.action == "logout":
                 with auth.operation_lock():
                     data = auth.logout()
@@ -200,6 +280,8 @@ def main():
                     "authenticated_locally": True,
                     "mail_address": account.mail_address,
                     "services_checked": args.check,
+                    "sender_addresses": account.sender_addresses,
+                    "calendar_ids": account.calendar_ids,
                 }
             result = {"ok": True, "data": data}
         elif args.command == "schema":

@@ -101,12 +101,13 @@ def test_external_content_is_literal_and_cannot_control_terminal():
 
 def mock_login(monkeypatch):
     monkeypatch.setattr(sys, "stdin", TerminalStream())
-    entries = iter(["invalid", "person@icloud.com", ""])
+    entries = iter(["invalid", "person@icloud.com", "", ""])
     monkeypatch.setattr("builtins.input", lambda: next(entries))
     passwords = iter(["ordinary-password", "abcd-efgh-ijkl-mnop"])
     monkeypatch.setattr("getpass.getpass", lambda *a, **kw: next(passwords))
     monkeypatch.setattr(auth, "operation_lock", nullcontext)
-    monkeypatch.setattr(cli, "check_account", lambda account: None)
+    monkeypatch.setattr(cli, "check_account", lambda account: [])
+    monkeypatch.setattr(terminal, "choose", lambda out, title, choices, selected: selected)
     saved = []
     monkeypatch.setattr(auth, "save", saved.append)
     return saved

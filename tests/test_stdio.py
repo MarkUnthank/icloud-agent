@@ -22,7 +22,7 @@ def test_real_stdio_handshake_and_not_authenticated(tmp_path):
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 tools = await session.list_tools()
-                assert len(tools.tools) == 13
+                assert len(tools.tools) == 14
                 result = await session.call_tool("mail_folders", {"arguments": {}})
                 payload = result.structuredContent or json.loads(result.content[0].text)
                 assert not payload["ok"]

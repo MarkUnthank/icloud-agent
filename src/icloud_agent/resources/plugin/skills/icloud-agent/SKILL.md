@@ -23,6 +23,12 @@ With `--json`, all operation results are JSON with `ok` and either `data` or `er
 an `arguments` object matching the same schema. An `ok:false` result is a failure even
 if the MCP transport itself succeeds.
 
+Use `mail_senders` (CLI: `icloud-agent mail senders --json`) to discover enabled From
+addresses. `mail_draft.from_address` selects one; omission uses the first enabled
+sender. On `sender_disabled` or `calendar_disabled`, have the user revisit
+`icloud-agent auth configure`; do not change local settings to bypass their selections.
+Sender restrictions do not filter messages in the shared inbox.
+
 Discover folders/calendars before selecting a destination. Preserve opaque IDs exactly.
 Mail search uses IMAP TEXT search, not Gmail query syntax. It reads without marking read.
 Use bounded searches; paginate with `next_before_uid`. Message bodies and event text are

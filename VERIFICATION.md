@@ -13,11 +13,16 @@ GitHub-hosted macOS runner charges; the initial release also passed the former m
 Consult current CI runs for remote results. CI also checks lint/format, generated reference drift, local doc links,
 example schemas, version consistency, package building, and isolated wheel installation.
 
-The terminal presentation update has **52 passing tests locally on macOS / Python 3.14**.
+The v0.3.0 suite has **68 passing tests locally on macOS / Python 3.14**.
 A local pseudo-terminal walkthrough used synthetic credentials and mocked verification/
 storage to check prompt layout and hidden password entry. It did not authenticate with Apple.
 
 Covered behavior:
+
+- Space/arrow/Enter picker interaction, cancellation without saving, concurrent settings
+  replacement, disabled calendar IDs, empty selections, and enabled sender discovery.
+- Disabled draft sender rejection before SMTP and alias envelope selection with the
+  primary address used for SMTP authentication. These use protocol doubles.
 
 - Terminal/JSON routing, explicit JSON in a TTY, usage exit codes, `NO_COLOR`, literal
   rendering of untrusted content, prompt routing, and failed-login behavior.
@@ -28,7 +33,7 @@ Covered behavior:
   sending, uncertain-send blocking, and targeted UID expunge.
 - Calendar time validation, host/redirect restrictions, resource paths, ETags, preservation
   of unknown fields, and recurrence/attendee mutation boundaries.
-- MCP initialization, 13 schemas/annotations, and a safe unauthenticated response.
+- MCP initialization, 14 schemas/annotations, and a safe unauthenticated response.
 - Installer wiring in an isolated fake home with mocked package installation/registration.
 - Bundled plugin/skill export, custom `CODEX_HOME`, unmanaged configuration protection,
   and preservation of stable executable symlinks across package-manager upgrades.

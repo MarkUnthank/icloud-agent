@@ -29,6 +29,7 @@ JSON Schema. [All generated schemas](tool-schemas.json) are also checked into th
 
 | MCP tool | CLI command | Access |
 |---|---|---|
+| [`mail_senders`](#mail_senders) | `mail senders` | Read |
 | [`mail_folders`](#mail_folders) | `mail folders` | Read |
 | [`mail_search`](#mail_search) | `mail search` | Read |
 | [`mail_read`](#mail_read) | `mail read` | Read |
@@ -42,6 +43,12 @@ JSON Schema. [All generated schemas](tool-schemas.json) are also checked into th
 | [`calendar_create`](#calendar_create) | `calendar create` | Write |
 | [`calendar_update`](#calendar_update) | `calendar update` | Write |
 | [`calendar_delete`](#calendar_delete) | `calendar delete` | Write |
+
+## mail_senders
+
+List locally enabled sender addresses. Aliases are user-configured; Apple validates sending permission during SMTP submission.
+
+Input: `{}`.
 
 ## mail_folders
 
@@ -71,7 +78,7 @@ Read a message or draft without marking it read. Returns content hash required f
 
 ## mail_draft
 
-Save a plain-text iCloud draft. Does not send. For replies, supply original message ID and explicit recipients.
+Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the first enabled sender. For replies, supply original message ID and explicit recipients.
 
 | Field | Type | Required | Default | Constraints |
 |---|---|---|---|---|
@@ -80,6 +87,7 @@ Save a plain-text iCloud draft. Does not send. For replies, supply original mess
 | `body` | string | Yes | — | maxLength: `100000` |
 | `cc` | array of string | No | `[]` | maxItems: `50` |
 | `reply_to_id` | string or null | No | `null` | — |
+| `from_address` | string or null | No | `null` | — |
 
 ## mail_send_draft
 
@@ -110,7 +118,7 @@ Move one message to an existing folder. Use the discovered Archive or Trash fold
 
 ## calendar_list
 
-List iCloud calendars and their IDs.
+List enabled iCloud calendars and their IDs.
 
 Input: `{}`.
 
