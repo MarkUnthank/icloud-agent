@@ -148,3 +148,33 @@ def result(out, payload, args):
     else:
         out.print(Padding(value_view(data), (0, 2)))
     out.print()
+
+
+def choose(out, title, choices, selected):
+    """Use the same stderr surface as login; never write prompt UI to JSON stdout."""
+    import questionary
+    from prompt_toolkit.output import ColorDepth
+    from prompt_toolkit.output.defaults import create_output
+
+    return questionary.checkbox(
+        title,
+        choices=[
+            questionary.Choice(literal(name), value=value, checked=value in selected)
+            for name, value in choices
+        ],
+        instruction="(↑↓ move · Space toggle · Enter save)",
+        style=questionary.Style(
+            [
+                ("qmark", "fg:ansicyan"),
+                ("question", "bold"),
+                ("answer", "fg:ansicyan bold"),
+                ("pointer", "fg:ansicyan bold"),
+                ("highlighted", "fg:ansicyan"),
+                ("selected", "fg:ansicyan"),
+            ]
+        )
+        if "NO_COLOR" not in os.environ
+        else questionary.Style([]),
+        output=create_output(stdout=out.file),
+        color_depth=ColorDepth.DEPTH_1_BIT if "NO_COLOR" in os.environ else None,
+    ).unsafe_ask()

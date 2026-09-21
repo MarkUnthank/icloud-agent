@@ -180,6 +180,18 @@ def recipients(values: list[str]) -> list[str]:
     return result
 
 
+def enabled_sender(account: Account, address: str | None):
+    if address is None:
+        address = next(iter(account.sender_addresses), None)
+    if address is None or address.casefold() not in {
+        item.casefold() for item in account.sender_addresses
+    }:
+        raise AgentError(
+            "sender_disabled", "Sender is not enabled. Run icloud-agent auth configure."
+        )
+    return recipients([address])[0]
+
+
 def draft(
     account: Account,
     to: list[str],
@@ -187,12 +199,13 @@ def draft(
     body: str,
     cc: list[str] | None = None,
     reply_to_id: str | None = None,
+    from_address: str | None = None,
 ):
     recipients(to + (cc or []))
     if not to:
         raise AgentError("invalid_address", "At least one To recipient is required.")
     msg = EmailMessage(policy=policy.SMTP)
-    msg["From"] = account.mail_address
+    msg["From"] = enabled_sender(account, from_address)
     msg["To"] = ", ".join(to)
     if cc:
         msg["Cc"] = ", ".join(cc)
@@ -281,10 +294,11 @@ def send_draft(account: Account, message_id: str, expected_sha256: str, state_di
             raise AgentError("draft_changed", "Draft changed. Read it again before sending.")
         msg = BytesParser(policy=policy.SMTP).parsebytes(raw)
         sender = recipients([str(msg.get("From", ""))])
-        if sender != [account.mail_address]:
-            raise AgentError(
-                "invalid_sender", "Draft sender must match the authenticated mail address."
-            )
+        if len(msg.get_all("From", [])) != 1 or len(sender) != 1:
+            raise AgentError("invalid_sender", "Draft must have exactly one From address.")
+        enabled_sender(account, sender[0])
+        if msg.get("Sender") is not None:
+            raise AgentError("unsupported", "Separate Sender headers are unsupported.")
         if any(h.lower().startswith("resent-") for h in msg.keys()):
             raise AgentError("unsupported", "Resent-* draft headers are unsupported.")
         targets = [
@@ -311,7 +325,7 @@ def send_draft(account: Account, message_id: str, expected_sha256: str, state_di
                 smtp.starttls(context=ssl.create_default_context())
                 smtp.ehlo()
                 smtp.login(account.mail_address, account.password)
-                refused = smtp.send_message(msg, from_addr=account.mail_address, to_addrs=targets)
+                refused = smtp.send_message(msg, from_addr=sender[0], to_addrs=targets)
         except Exception:
             raise AgentError(
                 "send_unconfirmed",

@@ -1,4 +1,15 @@
 {
+  "mail_senders": {
+    "description": "List locally enabled sender addresses. Aliases are user-configured; Apple validates sending permission during SMTP submission.",
+    "write": false,
+    "destructive": false,
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {},
+      "title": "Empty",
+      "type": "object"
+    }
+  },
   "mail_folders": {
     "description": "List iCloud mail folders and special-use flags.",
     "write": false,
@@ -77,7 +88,7 @@
     }
   },
   "mail_draft": {
-    "description": "Save a plain-text iCloud draft. Does not send. For replies, supply original message ID and explicit recipients.",
+    "description": "Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the first enabled sender. For replies, supply original message ID and explicit recipients.",
     "write": true,
     "destructive": false,
     "input_schema": {
@@ -121,6 +132,18 @@
           ],
           "default": null,
           "title": "Reply To Id"
+        },
+        "from_address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "From Address"
         }
       },
       "required": [
@@ -206,7 +229,7 @@
     }
   },
   "calendar_list": {
-    "description": "List iCloud calendars and their IDs.",
+    "description": "List enabled iCloud calendars and their IDs.",
     "write": false,
     "destructive": false,
     "input_schema": {

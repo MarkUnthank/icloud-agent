@@ -47,6 +47,10 @@ Login opens Apple's account page. Generate an **app-specific password** and ente
 in the hidden terminal prompt. It is saved in your OS credential store for future
 invocations. **Enter it in your terminal, never in chat.**
 
+Choose enabled calendars and sender addresses with **Space** and **Enter**. Calendars
+load automatically; add any existing sender aliases manually. Change your choices
+later with `icloud-agent auth configure`.
+
 Restart Codex, then try:
 
 > “Use iCloud Agent to show my unread emails.”

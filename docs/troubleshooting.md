@@ -21,6 +21,9 @@ can include private data. Avoid enabling library debug logging on your real acco
 | `codex_missing` | Install the Codex CLI and make it available on PATH, or run `setup` without `--codex` for another local client. |
 | Homebrew first install takes several minutes | The formula currently builds native dependencies. Let Homebrew finish; later command invocations do not compile or download code. |
 | Python too old / missing venv | Install Python 3.11+ with venv support. On Windows use `py -3`. On Linux your distribution may provide `python3-venv`. |
+| `setup_required` | Run `icloud-agent auth login` to explicitly select access after upgrading an older account config. |
+| `calendar_disabled` / `sender_disabled` | Run `icloud-agent auth configure` in your terminal to review enabled resources. An empty selection enables none. |
+| `config_changed` | Another login, logout, or configuration session changed account settings. Restart `auth configure`; the stale selection was not saved. |
 | `not_authenticated` | Run `icloud-agent auth login` in your own terminal. A config file alone is insufficient; the OS credential entry must exist. |
 | `interactive_login_required` | Login was launched from a pipe/agent session. Open a normal interactive terminal yourself. |
 | `invalid_password_format` | Use the generated `xxxx-xxxx-xxxx-xxxx` app-specific password, not your main Apple Account password. |
@@ -39,7 +42,7 @@ can include private data. Avoid enabling library debug logging on your real acco
 | `unsupported_event` | Recurring edits and attendee meetings aren't supported. Use your calendar client. |
 | `series_scope_required` | Deleting this resource removes the whole recurring series. Only set `whole_series:true` when that is the intended action. |
 | `range_too_large` / truncated events | Narrow the date range; search supports at most 366 days and bounded returned results. |
-| `operation_failed` with `Timeout` | Another local mutation may still hold the lock. Check its outcome before retrying. Don't remove a live lock file. |
+| `operation_failed` with `Timeout` | Another local operation may still hold the lock. Check its outcome before retrying. Don't remove a live lock file. |
 | `operation_failed` after a write | Its final state may be uncertain. Read back the resource first. The tool does not assume a transport error means nothing changed. |
 
 ## Need to report a bug?

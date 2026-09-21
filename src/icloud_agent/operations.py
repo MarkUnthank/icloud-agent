@@ -34,6 +34,7 @@ class MailDraft(Arguments):
     body: str = Field(max_length=100_000)
     cc: list[str] = Field(default_factory=list, max_length=50)
     reply_to_id: str | None = None
+    from_address: str | None = None
 
 
 class MailSend(MailRead):
@@ -98,6 +99,14 @@ def send(account, **kwargs):
 
 
 OPERATIONS = {
+    "mail_senders": Operation(
+        Empty,
+        lambda account: {
+            "addresses": account.sender_addresses,
+            "default": next(iter(account.sender_addresses), None),
+        },
+        "List locally enabled sender addresses. Aliases are user-configured; Apple validates sending permission during SMTP submission.",
+    ),
     "mail_folders": Operation(
         Empty, mail.folders, "List iCloud mail folders and special-use flags."
     ),
@@ -117,6 +126,7 @@ OPERATIONS = {
         MailDraft,
         mail.draft,
         "Save a plain-text iCloud draft. Does not send. "
+        "Use an enabled from_address, or omit to use the first enabled sender. "
         "For replies, supply original message ID and explicit recipients.",
         True,
     ),
@@ -139,7 +149,9 @@ OPERATIONS = {
         True,
         True,
     ),
-    "calendar_list": Operation(Empty, calendar.calendars, "List iCloud calendars and their IDs."),
+    "calendar_list": Operation(
+        Empty, calendar.calendars, "List enabled iCloud calendars and their IDs."
+    ),
     "calendar_search": Operation(
         CalendarSearch,
         calendar.search,
@@ -195,11 +207,12 @@ def invoke(name: str, arguments: dict, dry_run: bool = False) -> dict:
                     "note": "Schema validation only; no network requests or credential access.",
                 },
             }
-        account = auth.load()
-        if operation.write:
-            with auth.operation_lock():
-                data = operation.function(account, **values)
-        else:
+        # Configuration and writes share the lock, so a disabled resource cannot be
+        # accessed using account settings loaded before a concurrent configuration save.
+        with auth.operation_lock():
+            account = auth.load()
+            if name.startswith("calendar_"):
+                calendar.check_access(account, values)
             data = operation.function(account, **values)
         return {"ok": True, "data": data}
     except ValidationError as exc:

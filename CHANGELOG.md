@@ -6,6 +6,15 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+## 0.3.0 — 2026-09-21
+
+- Interactive sender/calendar selection with Space and Enter during login and `auth configure`.
+- Automatic calendar discovery; existing sender aliases can be entered manually.
+- Selected calendar access enforced for CLI and MCP, including opaque event IDs.
+- `mail_senders` and `mail_draft.from_address`; sending rechecks the enabled sender.
+- Empty selections enable nothing; newly discovered calendars require explicit selection.
+- Upgrading from 0.2.x requires `auth login` to choose access; account settings are not implicitly migrated.
+
 - Terminal presentation with cyan headings, grouped records, readable errors, and progress.
 - Guided login with default email input, inline validation, and hidden password entry.
 - Automatic JSON when stdout is piped; `--json` forces machine output in a terminal.

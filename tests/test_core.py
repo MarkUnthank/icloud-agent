@@ -15,6 +15,8 @@ from icloud_agent.errors import AgentError
 ACCOUNT = auth.Account("apple@example.com", "mail@icloud.com", "test-secret")
 CALENDAR = "https://p01-caldav.icloud.com/123/home/"
 EVENT_URL = CALENDAR + "event.ics"
+ACCOUNT.sender_addresses = [ACCOUNT.mail_address]
+ACCOUNT.calendar_ids = [CALENDAR]
 
 
 @contextmanager
@@ -46,6 +48,8 @@ def test_credentials_persist_outside_config_and_logout(monkeypatch, tmp_path):
     assert "test-secret" not in repr(ACCOUNT)
     assert config.stat().st_mode & 0o777 == 0o600
     assert auth.load().password == "test-secret"
+    assert auth.load().sender_addresses == ACCOUNT.sender_addresses
+    assert auth.load().calendar_ids == ACCOUNT.calendar_ids
     auth.logout()
     assert not config.exists()
     assert not keychain.values
@@ -372,7 +376,7 @@ def test_mcp_schemas_and_safe_dry_call():
     async def check():
         server = build_server()
         tools = await server.list_tools()
-        assert len(tools) == len(operations.OPERATIONS) == 13
+        assert len(tools) == len(operations.OPERATIONS) == 14
         by_name = {x.name: x for x in tools}
         assert by_name["mail_read"].annotations.readOnlyHint
         assert not by_name["mail_send_draft"].annotations.readOnlyHint
@@ -380,3 +384,34 @@ def test_mcp_schemas_and_safe_dry_call():
         assert "arguments" in by_name["mail_send_draft"].inputSchema["properties"]
 
     asyncio.run(check())
+
+
+def test_send_rechecks_disabled_sender_before_smtp(draft_transport, tmp_path):
+    _, ref, digest = draft_transport
+    restricted = auth.Account(ACCOUNT.apple_account, ACCOUNT.mail_address, ACCOUNT.password)
+    with pytest.raises(AgentError, match="not enabled"):
+        mail.send_draft(restricted, ref, digest, tmp_path)
+    assert SMTP.sent == 0
+    assert not list(tmp_path.iterdir())
+
+
+def test_send_alias_uses_alias_envelope_and_primary_login(draft_transport, tmp_path, monkeypatch):
+    mailbox, ref, _ = draft_transport
+    parsed = EmailMessage(policy=policy.SMTP)
+    parsed["From"] = "alias@icloud.com"
+    parsed["To"] = "recipient@example.com"
+    parsed["Subject"] = "Test alias"
+    parsed.set_content("Body")
+    mailbox.raw = parsed.as_bytes()
+    digest = hashlib.sha256(mailbox.raw).hexdigest()
+    selected = auth.Account(
+        ACCOUNT.apple_account,
+        ACCOUNT.mail_address,
+        ACCOUNT.password,
+        sender_addresses=["alias@icloud.com"],
+    )
+    envelopes = []
+    monkeypatch.setattr(SMTP, "send_message", lambda self, msg, **kw: envelopes.append(kw) or {})
+    result = mail.send_draft(selected, ref, digest, tmp_path)
+    assert result["smtp_accepted"]
+    assert envelopes == [{"from_addr": "alias@icloud.com", "to_addrs": ["recipient@example.com"]}]
