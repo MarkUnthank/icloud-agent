@@ -126,7 +126,9 @@ and removal, or [report a vulnerability privately](SECURITY.md).
 
 Bug reports, focused improvements, and carefully documented live compatibility
 results are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) to set up development,
-run the checks, and open a pull request. Please keep account data out of issues.
+run the checks, and open a pull request. New contributors are welcome; read our
+[community conduct](CODE_OF_CONDUCT.md) and [support guide](SUPPORT.md). Please keep
+account data out of issues.
 
 Maintained by [Mark Unthank](https://github.com/MarkUnthank). See the
 [changelog](CHANGELOG.md) for changes. This is an independent project, not affiliated
