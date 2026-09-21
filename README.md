@@ -7,6 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/MarkUnthank/icloud-agent/actions/workflows/test.yml"><img src="https://github.com/MarkUnthank/icloud-agent/actions/workflows/test.yml/badge.svg?branch=main" alt="CI status"></a>
+  <a href="https://github.com/MarkUnthank/homebrew-tap"><img src="https://img.shields.io/badge/install-Homebrew-FBB040?logo=homebrew&logoColor=white" alt="Install with Homebrew"></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-86b8b5" alt="MIT license"></a>
   <a href="docs/clients.md"><img src="https://img.shields.io/badge/MCP-local%20stdio-24292f" alt="Local stdio MCP"></a>
@@ -35,17 +36,16 @@ agent starts a local process and connects directly to Apple over TLS.
 
 ## Quick start
 
-You need **Python 3.11+**, Git, an iCloud Mail account, an OS credential store, and
-Apple Account two-factor authentication. macOS is the primary development platform.
+Install with [Homebrew](https://brew.sh/) on macOS. No source checkout or manual Python setup:
 
 ```sh
-# Download the source.
-git clone https://github.com/MarkUnthank/icloud-agent.git
-cd icloud-agent
-
-# Install the CLI and skill, register MCP with Codex, and connect iCloud.
-python3 install.py --codex --login
+brew install MarkUnthank/tap/icloud-agent
+icloud-agent setup --codex
+icloud-agent auth login
 ```
+
+You need an iCloud Mail account, Apple Account two-factor authentication, and Codex
+on PATH for `setup --codex`. Homebrew manages the CLI's runtime and dependencies.
 
 Setup opens Apple's account page. Generate an **app-specific password**, then enter
 it into the hidden terminal prompt. It is saved in your OS credential store and
@@ -67,11 +67,9 @@ icloud-agent calendar list
 icloud-agent schema mail_draft
 ```
 
-Omit `--codex` for another agent or a CLI-only installation. The installer prints an
-absolute executable path if `icloud-agent` is not on your PATH. See
-[installation, upgrades, and removal](docs/setup.md) for `pipx`, `uv`, Windows/Linux
-notes, and the complete authentication walkthrough. **This project is not published
-to PyPI; use this repository or its release artifacts.**
+For another local agent, run `icloud-agent setup` to export the bundled desktop
+plugin, or configure `icloud-agent mcp` directly. See [setup](docs/setup.md) for
+upgrades, removal, and installation with `uv` or `pipx` on other platforms.
 
 ## What it can do
 
@@ -93,7 +91,7 @@ distinguishes SMTP acceptance from actual delivery. [Details and examples →](d
 
 | Client | Integration |
 |---|---|
-| **Codex locally** | `install.py --codex` registers MCP and installs the skill |
+| **Codex locally** | `icloud-agent setup --codex` registers MCP and installs the skill |
 | **Other local agents** | Run `icloud-agent mcp` as a stdio subprocess, or invoke the CLI |
 | **ChatGPT desktop local work** | Plugin packaged; actual client/account compatibility needs validation |
 | **ChatGPT web, cloud, mobile** | No local bridge provided |

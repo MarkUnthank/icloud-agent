@@ -50,7 +50,9 @@ def main():
             json.loads((ROOT / "examples" / file).read_text())
         )
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
-    plugin = json.loads((ROOT / "plugins/icloud-agent/.codex-plugin/plugin.json").read_text())
+    plugin = json.loads(
+        (ROOT / "src/icloud_agent/resources/plugin/.codex-plugin/plugin.json").read_text()
+    )
     assert project["version"] == plugin["version"] == __version__, "Release versions differ"
     assert project["requires-python"] == ">=3.11"
     assert "the missing agentic icloud connection" in (ROOT / "README.md").read_text()

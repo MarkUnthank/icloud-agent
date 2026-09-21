@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "icloud-agent"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local iCloud Mail and Calendar CLI, skill, and stdio MCP tools"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -50,3 +50,6 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "UP"]
+
+[tool.hatch.build]
+artifacts = ["src/icloud_agent/resources/plugin/.mcp.json", "src/icloud_agent/resources/plugin/.codex-plugin/plugin.json"]

@@ -9,11 +9,12 @@ registration method per client to avoid duplicate tools.
 ## Codex: recommended
 
 ```sh
-python3 install.py --codex --login
+icloud-agent setup --codex
+icloud-agent auth login
 ```
 
-The installer registers an absolute command path with `codex mcp add` and copies
-`plugins/icloud-agent/skills/icloud-agent` into `~/.codex/skills/icloud-agent`.
+The setup command registers an absolute command path with `codex mcp add` and copies
+the bundled skill into `$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`).
 Restart Codex or start a fresh local session, then ask it to use iCloud Agent.
 
 ```sh
@@ -21,7 +22,7 @@ codex mcp get icloud-agent
 ```
 
 The connection should show `enabled: true`, `transport: stdio`, and `args: mcp`.
-The installer does not change unrelated MCP connections or install a daemon.
+The setup command does not change unrelated MCP connections or install a daemon.
 
 ## Codex: manual
 
@@ -32,7 +33,7 @@ After installing the CLI with pipx/uv and authenticating in your own terminal:
 codex mcp add icloud-agent -- /absolute/path/to/icloud-agent mcp
 ```
 
-Copy the skill folder from `plugins/icloud-agent/skills/icloud-agent` to your actual
+Run `icloud-agent setup` and copy `skills/icloud-agent` from its exported plugin to your actual
 Codex skill directory. If using a custom `CODEX_HOME`, choose its `skills` directory
 rather than the default. Preserve any existing skill with the same name until you
 have reviewed it. Start a new session after registration.
@@ -80,7 +81,7 @@ A skill alone does not grant filesystem, shell, or iCloud access to a cloud-only
 
 ## Desktop plugin
 
-The repository includes a plugin at `plugins/icloud-agent`:
+Run `icloud-agent setup` to export the plugin bundled with every installation:
 
 ```text
 .codex-plugin/plugin.json  metadata
@@ -88,9 +89,9 @@ The repository includes a plugin at `plugins/icloud-agent`:
 skills/icloud-agent/      companion skill
 ```
 
-The source plugin expects `icloud-agent` on the desktop client's PATH. The installer
-also prints a separate plugin copy whose `.mcp.json` uses the **absolute** installed
-executable path. Use that copy if your desktop client does not inherit your shell PATH.
+The exported `.mcp.json` uses the **absolute** installed executable path, so your
+desktop client does not need to inherit your shell PATH. The same bundle is available
+in the source repository at `src/icloud_agent/resources/plugin`.
 
 Import it using your client's supported local plugin workflow. Plugin packaging and
 installation UX vary by client/version. OpenAI documents local marketplace plugins

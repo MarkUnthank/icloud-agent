@@ -1,6 +1,6 @@
 {
   "name": "icloud-agent",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "the missing agentic icloud connection",
   "author": {
     "name": "Mark Unthank"

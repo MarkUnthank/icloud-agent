@@ -43,7 +43,7 @@ def main():
     bindir = runtime / ("Scripts" if sys.platform == "win32" else "bin")
     executable = bindir / ("icloud-agent.exe" if sys.platform == "win32" else "icloud-agent")
     python = bindir / ("python.exe" if sys.platform == "win32" else "python")
-    skill_source = root / "plugins/icloud-agent/skills/icloud-agent"
+    skill_source = root / "src/icloud_agent/resources/plugin/skills/icloud-agent"
     skill_destination = Path.home() / ".codex/skills/icloud-agent"
     if args.codex and not shutil.which("codex"):
         parser.error("Install Codex first, or omit --codex.")
@@ -65,7 +65,7 @@ def main():
     import json
 
     plugin_copy = base / "plugin/icloud-agent"
-    shutil.copytree(root / "plugins/icloud-agent", plugin_copy, dirs_exist_ok=True)
+    shutil.copytree(root / "src/icloud_agent/resources/plugin", plugin_copy, dirs_exist_ok=True)
     (plugin_copy / ".mcp.json").write_text(
         json.dumps(
             {"mcpServers": {"icloud-agent": {"command": str(executable), "args": ["mcp"]}}},

@@ -38,6 +38,8 @@ jobs:
           cd /tmp
           /tmp/icloud-wheel-check/bin/icloud-agent --version
           /tmp/icloud-wheel-check/bin/icloud-agent schema mail_draft
+          HOME=/tmp/icloud-wheel-home /tmp/icloud-wheel-check/bin/icloud-agent setup
+          test -f /tmp/icloud-wheel-home/.local/share/icloud-agent/plugin/icloud-agent/skills/icloud-agent/SKILL.md
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: python-distributions

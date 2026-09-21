@@ -8,7 +8,7 @@ Tests use synthetic data and protocol doubles for Apple services. A real subproc
 exercises the stdio MCP handshake, tool discovery, and unauthenticated error path.
 The suite requires no Apple Account and performs no live mailbox/calendar writes.
 
-The initial local baseline was **32 passing tests on macOS / Python 3.14**. The CI
+The v0.2.0 local suite has **37 passing tests on macOS / Python 3.14**. The CI
 workflow tests Python 3.11 and 3.14 on Linux and macOS; consult its current run for
 remote results. CI also checks lint/format, generated reference drift, local doc links,
 example schemas, version consistency, package building, and isolated wheel installation.
@@ -24,11 +24,17 @@ Covered behavior:
   of unknown fields, and recurrence/attendee mutation boundaries.
 - MCP initialization, 13 schemas/annotations, and a safe unauthenticated response.
 - Installer wiring in an isolated fake home with mocked package installation/registration.
+- Bundled plugin/skill export, custom `CODEX_HOME`, unmanaged configuration protection,
+  and preservation of stable executable symlinks across package-manager upgrades.
 
 The local installer has additionally been exercised on macOS without login. Codex
 configuration readback showed an enabled stdio connection using the installed absolute
 executable; the separately installed wheel exposed all 13 tools. Plugin/skill structure
 validators passed. These checks are not proof of live Apple behavior or use in ChatGPT.
+
+A v0.2.0 wheel was installed in a fresh environment and `setup` exported its plugin
+and skill from outside the checkout. The CLI version and schema-only invocation passed.
+Homebrew formula checks are tracked in the [tap](https://github.com/MarkUnthank/homebrew-tap).
 
 ## What is still unverified
 

@@ -6,6 +6,13 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+## 0.2.0 — 2026-09-21
+
+- Homebrew distribution through `MarkUnthank/tap/icloud-agent`.
+- Packaged `setup --codex` command installs the skill and registers local MCP without a checkout.
+- Every wheel includes the desktop plugin and skill; setup respects `CODEX_HOME`.
+- Package-manager installation, upgrade, migration, and removal documentation.
+
 ## 0.1.0 — 2026-09-21
 
 Initial public preview.

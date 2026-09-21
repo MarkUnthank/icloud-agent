@@ -18,6 +18,13 @@
 7. Read back the tag, release commit, attached assets, and public repository visibility.
    Confirm the README header and badges render on GitHub.
 
-This repository currently distributes source and GitHub release artifacts. Registry
-publication, release signing, and a hosted docs site are not configured. Do not add
-badges implying those services exist.
+8. Update the formula URL/checksum in [homebrew-tap](https://github.com/MarkUnthank/homebrew-tap).
+   Run `brew update-python-resources MarkUnthank/tap/icloud-agent`
+   to refresh checksummed dependencies. Review dependency/build changes, then run
+   `brew reinstall --build-from-source MarkUnthank/tap/icloud-agent` and
+   `brew test MarkUnthank/tap/icloud-agent`. Commit and push the verified formula.
+9. Verify setup using the installed wheel/formula outside a source checkout. Confirm the
+   exported skill and plugin are present and use a stable executable path.
+
+Homebrew installs from the maintainer tap; no Homebrew/core inclusion or bottles are
+claimed. PyPI/npm publication, release signing, and a hosted docs site are not configured.

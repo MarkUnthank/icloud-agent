@@ -2,76 +2,61 @@
 
 [← README](../README.md) · [Troubleshooting](troubleshooting.md)
 
-## Requirements
-
-- Python 3.11 or newer, with `venv` and pip available.
-- An Apple Account with iCloud Mail enabled and two-factor authentication.
-- A native OS credential store accessible in your current login session.
-- Internet access to Apple's IMAP, SMTP, and CalDAV services.
-- Codex on PATH if you use the `--codex` installer option.
-
-Check `python3 --version` before starting. On Windows, use `py -3` wherever these
-instructions show `python3`. Linux distributions may package `python3-venv` separately.
-Linux also needs a running Secret Service provider, such as GNOME Keyring, available
-through the user's D-Bus session. A headless shell without a credential store is not
-supported. Windows/Linux credential-store behavior is not yet live-tested.
-
-## Recommended: local installer
+## Homebrew (macOS)
 
 ```sh
-git clone https://github.com/MarkUnthank/icloud-agent.git
-cd icloud-agent
-python3 install.py --codex --login
+brew install MarkUnthank/tap/icloud-agent
+icloud-agent setup --codex
+icloud-agent auth login
 ```
 
-The installer creates a private Python environment, installs this project, registers
-its absolute executable path with Codex, copies the companion skill, and runs login.
-It does not install a service or modify your shell startup files.
+Homebrew installs an isolated Python runtime and dependencies. You do not need Git,
+a source checkout, or a separate Python installation. The first install may compile
+native dependencies; subsequent upgrades use the same Homebrew workflow.
 
-| Option | Effect |
-|---|---|
-| No options | Install the CLI and make a desktop plugin copy |
-| `--codex` | Also register a global Codex MCP connection and install the skill |
-| `--login` | Start the interactive authentication flow afterward |
+You need an Apple Account with iCloud Mail and two-factor authentication, an unlocked
+native credential store, and internet access to Apple. Install Codex with its CLI on
+PATH before using `setup --codex`. Restart Codex after setup.
 
-An existing unmanaged skill, MCP entry, or command is preserved. For Codex, install
-using the default `~/.codex` location; custom Codex skill directories require manual
-skill installation. Restart the agent client after adding tools.
+The formula lives in [MarkUnthank's tap](https://github.com/MarkUnthank/homebrew-tap),
+not Homebrew/core. The CLI remains an early release with [these verification limits](../VERIFICATION.md).
 
-The installer prints its executable and plugin paths. On macOS they are:
+## Other platforms: uv or pipx
 
-```text
-~/Library/Application Support/icloud-agent/runtime/bin/icloud-agent
-~/Library/Application Support/icloud-agent/plugin/icloud-agent
-```
-
-On Linux the runtime is under `$XDG_DATA_HOME/icloud-agent/runtime`, defaulting to
-`~/.local/share/icloud-agent/runtime`. On Windows it is under
-`%LOCALAPPDATA%\icloud-agent\runtime`, with the executable in `Scripts`.
-
-On macOS/Linux a command symlink is created at `~/.local/bin/icloud-agent`, unless
-another command already occupies that path. Add `~/.local/bin` to your shell's PATH
-if necessary; the absolute installed path works without doing so.
-
-## Alternative: pipx or uv
-
-From the cloned repository, choose one:
+Install the published wheel directly; no clone needed. Choose one:
 
 ```sh
-pipx install .
+uv tool install https://github.com/MarkUnthank/icloud-agent/releases/download/v0.2.0/icloud_agent-0.2.0-py3-none-any.whl
 ```
 
 ```sh
-uv tool install .
+pipx install https://github.com/MarkUnthank/icloud-agent/releases/download/v0.2.0/icloud_agent-0.2.0-py3-none-any.whl
 ```
 
-Then run `icloud-agent auth login` and follow [manual agent setup](clients.md).
-These package managers install the CLI; they do not automatically register MCP or
-copy the skill. Avoid installing the CLI twice with different methods.
+These methods require Python 3.11+ (uv can manage Python for you). Then run the same
+`icloud-agent setup --codex` and `icloud-agent auth login` commands. No PyPI or npm
+package is published by this project. Avoid installing the CLI through multiple managers.
 
-No PyPI package is published by this project. Use this repository or a release wheel.
-The source checkout also contains the skill and plugin; the wheel contains the Python
-CLI/MCP package, not the desktop plugin bundle.
+Linux needs a running Secret Service provider, such as GNOME Keyring, accessible over
+the user's D-Bus session. A headless shell without a credential store is unsupported.
+Windows uses Credential Manager. These credential-store paths are not yet live-tested.
+
+## Agent setup
+
+`icloud-agent setup --codex` registers local MCP and installs the bundled skill under
+`$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`). It preserves
+unmanaged registrations/skills with the same name and can update its own integration.
+An absolute executable path avoids desktop PATH differences. When using Homebrew,
+invoke the command through its stable Homebrew `bin` or `opt` path, not a versioned
+Cellar path. Rerun setup after changing installation method.
+
+`icloud-agent setup` without flags exports the bundled desktop plugin and prints its
+path as JSON. On macOS it is `~/Library/Application Support/icloud-agent/plugin/icloud-agent`.
+No service is installed. Setup does not authenticate; login happens separately in
+your terminal. See [agent setup](clients.md) for other MCP clients.
+
+For contributors working from source, `python3 install.py --codex --login` remains
+available. End users should use a package manager.
 
 ## Connect once
 
@@ -119,17 +104,24 @@ credentials into a support issue, chat, shell argument, or agent-captured termin
 
 ## Upgrade
 
-For the local installer, update a clean source checkout and rerun it:
-
 ```sh
-git pull --ff-only
-python3 install.py --codex
+brew update
+brew upgrade MarkUnthank/tap/icloud-agent
+icloud-agent setup --codex
 ```
 
-Credentials and the send journal are outside the runtime and are retained. Restart
-your agent afterward. If you installed with pipx or uv, use that tool to reinstall
-from the updated checkout instead. This project is pre-1.0; check the changelog for
-interface changes before upgrading scripts that depend on it.
+Rerun setup to refresh the bundled skill/plugin, then restart your agent. Credentials
+and the send journal live outside the package and are retained. For uv/pipx, reinstall
+using the new version's wheel URL from [Releases](https://github.com/MarkUnthank/icloud-agent/releases)
+and the manager's `--force` option. Review the changelog before updating dependent scripts.
+
+### Switching from the original source installer
+
+Install with Homebrew, then run `"$(brew --prefix)/bin/icloud-agent" setup --codex`.
+This updates the managed Codex registration while preserving credentials and journal.
+Remove `~/.local/bin/icloud-agent` only if it is the old installer's symlink; otherwise
+it may shadow the Homebrew command. You can then remove the old application-data
+`runtime` directory. Keep the application-data `plugin` directory and any unrelated files.
 
 ## Remove
 
@@ -142,11 +134,12 @@ For an installation made with `--codex`:
 codex mcp remove icloud-agent
 ```
 
-Remove the managed `~/.codex/skills/icloud-agent` directory. If you installed a desktop
+Remove the managed `$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`) directory. If you installed a desktop
 plugin separately, uninstall it in that client's plugin manager as well. Finally,
-remove this tool's runtime/plugin directory and its `~/.local/bin/icloud-agent`
-symlink, or use `pipx uninstall icloud-agent` / `uv tool uninstall icloud-agent` for
-package-manager installs. Delete only paths belonging to this project.
+run `brew uninstall icloud-agent`, `pipx uninstall icloud-agent`, or
+`uv tool uninstall icloud-agent`, matching your install method. Remove the exported
+plugin directory separately. For the source installer, remove its runtime and
+`~/.local/bin/icloud-agent` symlink. Delete only paths belonging to this project.
 
 Account metadata and the journal use [platform-specific locations](security.md#local-state).
 Logout removes account metadata and the active keychain entry, but intentionally keeps

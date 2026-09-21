@@ -76,6 +76,10 @@ def parser():
     auth_commands.add_parser("login").add_argument("--no-browser", action="store_true")
     auth_commands.add_parser("status").add_argument("--check", action="store_true")
     auth_commands.add_parser("logout")
+    setup_parser = commands.add_parser("setup", help="Install bundled agent integration.")
+    setup_parser.add_argument(
+        "--codex", action="store_true", help="Register MCP and install the Codex skill."
+    )
     commands.add_parser("mcp", help="Run local stdio MCP; no port, tunnel, or background daemon.")
     schema = commands.add_parser(
         "schema", help="Show operations or one operation's JSON input schema."
@@ -124,7 +128,11 @@ def main():
 
             run()
             return
-        if args.command == "auth":
+        if args.command == "setup":
+            from .setup import setup
+
+            result = {"ok": True, "data": setup(codex=args.codex)}
+        elif args.command == "auth":
             if args.action == "login":
                 data = login(args.no_browser)
             elif args.action == "logout":
