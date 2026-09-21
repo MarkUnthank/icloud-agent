@@ -1,0 +1,68 @@
+docs/security.md
+  s_6fe6e02598edf3::t_7bb02a4e4e92e5 30-31
+docs/architecture.md
+  s_6fe6e02598edf3::t_7bb02a4e4e92e5 77
+docs/setup.md
+  s_6fe6e02598edf3::t_cf2c8a5d3fa330 71-72
+  s_6fe6e02598edf3::t_4358d51cec64d0 69-70,73-74,76-78,80,86
+  s_6fe6e02598edf3::t_b752302e4d3172 75
+  s_6fe6e02598edf3::t_7bb02a4e4e92e5 79,87-92,115-116
+docs/authentication-design.md
+  s_6fe6e02598edf3::t_4358d51cec64d0 11,27,29,54
+  s_6fe6e02598edf3::t_7bb02a4e4e92e5 24-26,28,30-42,70-71
+src/icloud_agent/terminal.py
+  s_6fe6e02598edf3::t_b752302e4d3172 57,61-86
+  s_6fe6e02598edf3::t_6708b76077b081 126-128
+  s_6fe6e02598edf3::t_6c56c79265fe89 87-88,129,189
+pyproject.toml
+  s_6fe6e02598edf3::t_b752302e4d3172 27-28
+src/icloud_agent/cli.py
+  s_6fe6e02598edf3::t_4358d51cec64d0 37-44
+  s_6fe6e02598edf3::t_cf2c8a5d3fa330 47-48,53-56
+  s_6fe6e02598edf3::t_6708b76077b081 51,58,86-87,98,123,140,341-342,346
+  s_6fe6e02598edf3::t_2f84f57a88038c 11,23,85,88-92,94,96-97,99-102,104-107,109-115,131-133,136,165-166,348
+  s_6fe6e02598edf3::t_f3cc4a54b35504 347
+tests/test_terminal.py
+  s_6fe6e02598edf3::t_7b6eea3b201696 4,6,10-11,13,222-224,244-282,286-298
+  s_6fe6e02598edf3::t_4358d51cec64d0 112,122,137,144,150,157,165,176
+  s_6fe6e02598edf3::t_6708b76077b081 169,189
+  s_6fe6e02598edf3::t_cf2c8a5d3fa330 138-139,145-149,151-156,158-164,171-175,177-188
+  s_6fe6e02598edf3::t_3f6377802eba9a 283-285
+  s_6fe6e02598edf3::t_681971a2531f19 225-243
+  s_6fe6e02598edf3::t_b752302e4d3172 108-110,115-120,166-168,170
+src/icloud_agent/resources/plugin/skills/icloud-agent/SKILL.md
+  s_6fe6e02598edf3::t_561ea7df88ebf7 3,8-52
+CHANGELOG.md
+  s_6fe6e02598edf3::t_7bb02a4e4e92e5 12-15
+  s_6fe6e02598edf3::t_561ea7df88ebf7 9-11
+  s_6fe6e02598edf3::t_4358d51cec64d0 21-22
+  s_6fe6e02598edf3::t_cf2c8a5d3fa330 19-20
+  s_6fe6e02598edf3::t_b752302e4d3172 16-18
+tests/test_access.py
+  s_6fe6e02598edf3::t_3f6377802eba9a 9,142,161
+tests/test_discovery.py
+  s_6fe6e02598edf3::t_3f6377802eba9a 1-24,26-30,35-50,54-63,67-80,89,94-112,118-121
+  s_6fe6e02598edf3::t_d668f1808b076d 25,31-34,51-53,64-66,81-88,90-93,113-117
+src/icloud_agent/discovery.py
+  s_6fe6e02598edf3::t_2f84f57a88038c 1-14,16-22,24-43
+  s_6fe6e02598edf3::t_d668f1808b076d 15,23
+README.md
+  s_6fe6e02598edf3::t_cf2c8a5d3fa330 46
+  s_6fe6e02598edf3::t_7bb02a4e4e92e5 50-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "50b2be6c182c5e75e8179b5f8a7c9fdacdaae74c",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
