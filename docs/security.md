@@ -5,7 +5,8 @@
 ## Data path
 
 Your local CLI/MCP process connects directly to Apple's IMAP, SMTP, and CalDAV services
-over TLS. The project operates no proxy, has no telemetry, and makes no OpenAI API
+over TLS. The experimental web login also connects to Apple's authentication and
+iCloud web services. The project operates no proxy, has no telemetry, and makes no OpenAI API
 calls itself. Installing/updating the Python package contacts package registries; a
 login may open Apple's account page in your default browser.
 
@@ -20,6 +21,15 @@ native backend: macOS Keychain, Windows Credential Manager, or Linux Secret Serv
 There is no plaintext keyring fallback, password argument, environment-variable login,
 browser-cookie extraction, or hidden main-account password storage. The credential is
 available in process memory while making requests to Apple.
+
+The separate `auth web-login` experiment accepts your main Apple Account password and
+2FA code in a masked terminal prompt. Neither is persisted. Session tokens and cookies
+are stored under the native credential service `icloud-agent-web`; automatic plaintext
+cookie/session files are disabled. This is an Apple web session, whose underlying
+authority can extend beyond this tool's two read-only Mail checks. It is not an Apple-issued
+Mail-only or read-only token. The experiment is not exposed through MCP and does not
+change the standard operations' app-password authentication or selection policy.
+See [the authentication design](authentication-design.md#apple-account-web-session-experiment).
 
 The OS may prompt to unlock or allow access to its credential store. Any process
 running with equivalent access under your account may still be able to use the same
@@ -46,6 +56,13 @@ Linux XDG variables may override defaults. The local installer's runtime/plugin
 location is distinct from platformdirs on some platforms; see [setup](setup.md).
 The journal consists of `send-*.json` files; the lock is `operations.lock`.
 
+Agent skills live in `~/.agents/skills/icloud-agent`, with optional links or copies
+in other agents' skill directories. Skill installation uses bundled files and does
+not access credentials or change Mail/Calendar selections. Its lock is
+`~/.agents/.icloud-agent-skills.lock`. The ownership marker inside the installed skill
+allows subsequent updates; Codex MCP ownership is tracked separately by
+`$CODEX_HOME/.icloud-agent-mcp` (default `~/.codex/.icloud-agent-mcp`).
+
 Private directories/config files receive restrictive POSIX permissions. Windows file
 protection relies on the user's profile/ACLs and its native credential manager; a POSIX
 mode is not a complete Windows ACL policy. Native Windows/Linux credential stores have
@@ -57,6 +74,7 @@ cached by the tool. Your client, shell redirection, or input JSON files may stor
 separately. Delete sensitive input/output files when you no longer need them.
 
 `auth logout` removes the active config and keychain credential but retains the journal.
+If you tried web login, run `auth web-logout` separately to remove that session too.
 Removing the journal removes duplicate-attempt protection. To remove the integration
 completely, follow [removal instructions](setup.md#remove) and revoke the app-specific
 password at Apple.

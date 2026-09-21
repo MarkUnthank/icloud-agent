@@ -44,7 +44,8 @@ Windows uses Credential Manager. These credential-store paths are not yet live-t
 ## Agent setup
 
 `icloud-agent setup --codex` registers local MCP and installs the bundled skill under
-`$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`). It preserves
+`~/.agents/skills/icloud-agent`. Codex reads that shared directory directly. `CODEX_HOME`
+still selects the Codex configuration used for MCP registration. Setup preserves
 unmanaged registrations/skills with the same name and can update its own integration.
 An absolute executable path avoids desktop PATH differences. When using Homebrew,
 invoke the command through its stable Homebrew `bin` or `opt` path, not a versioned
@@ -54,6 +55,41 @@ Cellar path. Rerun setup after changing installation method.
 path. Add `--json` for machine-readable output. On macOS it is `~/Library/Application Support/icloud-agent/plugin/icloud-agent`.
 No service is installed. Setup does not authenticate; login happens separately in
 your terminal. See [agent setup](clients.md) for other MCP clients.
+
+### Install agent skills
+
+Both `auth login` and `auth web-login` finish with **Install agent skills** and **Finish**
+options. Choosing Finish, cancelling, or encountering a skill-installation error leaves
+the successful iCloud login saved. The optional prompt is omitted for JSON/piped output.
+
+To install or update skills separately:
+
+```sh
+icloud-agent setup --skills
+```
+
+The shared skill goes in `~/.agents/skills/icloud-agent`, following the global layout
+used by [Skills](https://github.com/vercel-labs/skills). Codex, Cursor, Gemini CLI,
+OpenCode, GitHub Copilot, Cline, and other agents that read the shared directory can
+use it there. Use **Space** and **Enter** to select additional agents. Supported links
+include Claude Code, Continue, Goose, OpenClaw, OpenHands, Roo Code, and Windsurf.
+
+The installer copies the skill bundled with your installed CLI. It runs locally in
+Python; it does not invoke `npx`, download skills, or require Node/npm. Additional
+agents receive relative symlinks; if symlinks are unavailable, they receive copies.
+Use `--copy` to request copies explicitly. Rerun setup after upgrading to refresh copies.
+
+For an agent or script, select targets explicitly; `--json` disables the picker:
+
+```sh
+icloud-agent setup --skills --agent claude-code --agent windsurf --json
+icloud-agent setup --skills --json
+```
+
+The second command installs only the shared skill. `CLAUDE_CONFIG_DIR` and
+`XDG_CONFIG_HOME` are respected where applicable. An older icloud-agent-managed Codex
+copy is moved to the shared layout so it cannot shadow the updated skill. Unmanaged
+files or symlinks with the same name cause a conflict before installation changes them.
 
 For contributors working from source, `python3 install.py --codex --login` remains
 available. End users should use a package manager.
@@ -80,6 +116,7 @@ icloud-agent auth login
 7. Choose enabled calendars: **arrow keys** move, **Space** toggles, and
    **Enter** saves. Calendars start unchecked; choose those you want the agent to access.
    An empty selection enables none. Ctrl-C cancels without saving changes.
+8. Once connected, choose **Install agent skills** or **Finish**.
 
 The CLI validates IMAP and CalDAV before saving credentials. It does not send a test
 email; SMTP authentication is checked only during an actual send. It uses your
@@ -87,6 +124,8 @@ login email to authenticate. Enabled aliases can be used as senders.
 Address discovery reads the account's CalDAV `calendar-user-address-set` using the
 same app-specific password. This includes iCloud aliases and custom-domain addresses
 on the account tested, but is a calendar identity list, not an SMTP permission check.
+If you have also used `auth web-login` for this account, setup reads the Mail alias list
+through that session instead. An expired or unavailable web session falls back to CalDAV.
 Only select addresses you use with iCloud Mail. Apple checks sending permission during
 SMTP submission; login does not send a verification message. If Apple omits an address,
 you can add it in the picker. No browser session or second password is needed for discovery.
@@ -121,6 +160,34 @@ Local logout does not revoke the password at Apple. Revoke it at
 [account.apple.com](https://account.apple.com/) to invalidate it remotely. Never paste
 credentials into a support issue, chat, shell argument, or agent-captured terminal.
 
+## Try Apple Account sign-in
+
+The development build includes a separate web-session experiment:
+
+```sh
+icloud-agent auth web-login   # normal Apple Account password, then device/SMS 2FA
+icloud-agent auth web-status  # validate the saved session with Apple
+icloud-agent auth web-check   # show discovered sender addresses and Mail folder count
+icloud-agent auth web-logout  # remove this local web session
+```
+
+Run sign-in yourself in a normal terminal. Enter your usual Apple Account password,
+not an app-specific password. Both the password and verification code are masked and
+remain in memory only. The reusable session is saved in the native OS credential
+store. Subsequent sign-ins check that session first. Apple may expire or revoke it.
+
+This experiment is separate from `auth login`: normal Mail/Calendar operations still
+use the app-specific password and your existing access selections. `web-check` lists
+active addresses and the iCloud default sender, then checks Mail folder access.
+`auth configure` uses these addresses in its picker when this session is valid.
+Discovery does not change which senders you have enabled locally.
+These reads have been verified on one real account; they read no message bodies and
+perform no Mail or Calendar writes. Security-key and
+legacy two-step sign-in are not supported. See [authentication design](authentication-design.md).
+
+`web-logout` removes only this tool's local web session. It does not sign out other
+Apple devices, revoke sessions at Apple, or remove the app-specific password.
+
 ## Upgrade
 
 ```sh
@@ -149,6 +216,7 @@ it may shadow the Homebrew command. You can then remove the old application-data
 
 First run `icloud-agent auth logout` while the executable is still present, then
 revoke its app-specific password at Apple if you want remote revocation too.
+If you tried web login, also run `icloud-agent auth web-logout` to remove that saved session.
 
 For an installation made with `--codex`:
 
@@ -156,7 +224,9 @@ For an installation made with `--codex`:
 codex mcp remove icloud-agent
 ```
 
-Remove the managed `$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`) directory. If you installed a desktop
+Remove `~/.agents/skills/icloud-agent` and its links/copies in any additional agents you
+selected. For an older installation, the managed skill may still be under
+`$CODEX_HOME/skills/icloud-agent` (default `~/.codex/skills/icloud-agent`). If you installed a desktop
 plugin separately, uninstall it in that client's plugin manager as well. Finally,
 run `brew uninstall icloud-agent`, `pipx uninstall icloud-agent`, or
 `uv tool uninstall icloud-agent`, matching your install method. Remove the exported

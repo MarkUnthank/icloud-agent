@@ -12,7 +12,7 @@ from prompt_toolkit.input import create_pipe_input
 from rich.console import Console
 from rich.text import Text
 
-from icloud_agent import auth, cli, terminal
+from icloud_agent import agent_skills, auth, cli, terminal, web_login
 from icloud_agent.errors import AgentError
 
 
@@ -62,6 +62,60 @@ def test_human_output_and_no_color(monkeypatch):
     assert code == 0 and not stderr
     assert "icloud-agent" in stdout and "Executed" in stdout
     assert "\x1b" not in stdout
+
+
+@pytest.mark.parametrize("force_json", [False, True])
+def test_connected_card_keeps_login_success_and_json_contract(monkeypatch, force_json):
+    monkeypatch.setenv("NO_COLOR", "")
+    data = {"web_session_saved": True, "email": "person@icloud.com", "reused_session": True}
+    monkeypatch.setattr(web_login, "login", lambda: data)
+    args = ["auth", "web-login"] + (["--json"] if force_json else [])
+    code, stdout, stderr = run_cli(monkeypatch, args, tty=True)
+    assert code == 0 and not stderr
+    assert "\x1b" not in stdout
+    if force_json:
+        assert json.loads(stdout) == {"ok": True, "data": data}
+    else:
+        assert "✓  Connected to iCloud" in stdout
+        assert "person@icloud.com" in stdout
+
+
+@pytest.mark.parametrize(
+    "tty,force_json,offered", [(True, False, True), (True, True, False), (False, False, False)]
+)
+def test_optional_skills_only_after_success_in_a_human_terminal(
+    monkeypatch, tty, force_json, offered
+):
+    monkeypatch.setattr(sys, "stdin", TerminalStream())
+    monkeypatch.setattr(web_login, "login", lambda: {"email": "person@icloud.com"})
+    calls = []
+
+    def offer(out):
+        assert "Connected to iCloud" in sys.stdout.getvalue()
+        calls.append(True)
+
+    monkeypatch.setattr(agent_skills, "offer", offer)
+    args = ["auth", "web-login"] + (["--json"] if force_json else [])
+    code, stdout, stderr = run_cli(monkeypatch, args, tty=tty)
+    assert code == 0 and bool(calls) is offered
+    if not offered:
+        assert json.loads(stdout)["ok"]
+
+
+def test_optional_skill_failure_keeps_successful_login_exit_status(monkeypatch):
+    monkeypatch.setattr(sys, "stdin", TerminalStream())
+    monkeypatch.setattr(web_login, "login", lambda: {"email": "person@icloud.com"})
+    monkeypatch.setattr(terminal, "pick_one", lambda *args: "install")
+    monkeypatch.setattr(agent_skills, "choose_agents", lambda out: [])
+
+    def fail(*args):
+        raise AgentError("setup_conflict", "User-owned skill exists.")
+
+    monkeypatch.setattr(agent_skills, "install", fail)
+    code, stdout, stderr = run_cli(monkeypatch, ["auth", "web-login"], tty=True)
+    assert code == 0 and "Connected to iCloud" in stdout
+    assert "Agent skills were not installed" in stderr
+    assert "Retry: icloud-agent setup --skills" in stderr
 
 
 @pytest.mark.parametrize("tty, force_json", [(False, False), (True, True), (True, False)])
@@ -241,16 +295,17 @@ def test_cancel_warning_only_for_executing_writes(monkeypatch, args, write_warni
 
 
 @pytest.mark.parametrize(
-    "pasted",
+    "pasted,strip",
     [
-        "abcd-efgh-ijkl-mnop\n",
-        "abcd-efgh-ijkl-mnop\r\n",
-        "abcd-efgh-ijkl-mnop\r",
-        " \tabcd-efgh-ijkl-mnop\n\n ",
-        "abcd-efgh\n-ijkl-mnop",
+        ("abcd-efgh-ijkl-mnop\n", True),
+        ("abcd-efgh-ijkl-mnop\r\n", True),
+        ("abcd-efgh-ijkl-mnop\r", True),
+        (" \tabcd-efgh-ijkl-mnop\n\n ", True),
+        ("abcd-efgh\n-ijkl-mnop", True),
+        ("  valid-password-spaces  ", False),
     ],
 )
-def test_password_paste_is_masked_trimmed_and_waits_for_enter(monkeypatch, capsys, pasted):
+def test_password_paste_is_masked_and_waits_for_enter(monkeypatch, capsys, pasted, strip):
     monkeypatch.setenv("NO_COLOR", "1")
     ready, masked = Event(), Event()
 
@@ -269,7 +324,7 @@ def test_password_paste_is_masked_trimmed_and_waits_for_enter(monkeypatch, capsy
         def read_password():
             with create_app_session(input=pipe):
                 return terminal.password_input(
-                    SimpleNamespace(file=output), Text("  Password (hidden) › ")
+                    SimpleNamespace(file=output), Text("  Password (hidden) › "), strip=strip
                 )
 
         pending = pool.submit(read_password)
@@ -280,9 +335,8 @@ def test_password_paste_is_masked_trimmed_and_waits_for_enter(monkeypatch, capsy
             with pytest.raises(TimeoutError):
                 pending.result(timeout=0.1)
             pipe.send_text("\r")
-            assert pending.result(timeout=3) == pasted.strip().replace("\r\n", "\n").replace(
-                "\r", "\n"
-            )
+            expected = pasted.strip() if strip else pasted
+            assert pending.result(timeout=3) == expected.replace("\r\n", "\n").replace("\r", "\n")
         finally:
             if not pending.done():
                 pipe.send_text("\x03")

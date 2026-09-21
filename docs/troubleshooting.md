@@ -28,7 +28,13 @@ can include private data. Avoid enabling library debug logging on your real acco
 | `interactive_login_required` | Login was launched from a pipe/agent session. Open a normal interactive terminal yourself. |
 | `invalid_password_format` | Use the generated `xxxx-xxxx-xxxx-xxxx` app-specific password, not your main Apple Account password. |
 | Keychain/Secret Service access fails | Unlock your OS login session/credential store and allow the app if prompted. On Linux confirm a Secret Service provider and D-Bus user session are running. There is no plaintext fallback. |
-| Login or `--check` fails | Check internet access, both account addresses, iCloud Mail enablement, and whether Apple revoked the password. `--check` tests IMAP and CalDAV; SMTP is checked only on send. |
+| Login or `--check` fails | Check internet access, the login email, iCloud Mail enablement, and whether Apple revoked the password. `--check` tests IMAP and CalDAV; SMTP is checked only on send. |
+| `web_login_required` / `web_session_expired` | Run `auth web-login` yourself in a terminal. This experimental login uses your normal Apple Account password and device/SMS verification. |
+| `invalid_web_session` | Run `auth web-logout`, then `auth web-login` to replace this tool's saved web session. |
+| `verification_failed` / `web_login_incomplete` | Apple verification did not complete. Retry `auth web-login` and use the newly requested code. A failed attempt does not replace a saved session. |
+| `security_key_required` | The experimental login supports device/SMS codes, not hardware security keys. The standard app-password connection remains available. |
+| `apple_account_action_required` | Sign in at iCloud.com and review Apple's updated terms, then retry. The CLI does not accept terms for you. |
+| `web_mail_failed` / `web_mail_unavailable` | The experimental Mail endpoint failed or was not offered for the account. This does not mean the standard IMAP/CalDAV connection failed. Report only the error code and HTTP status. |
 | MCP tool not visible | Restart the client; verify `codex mcp get icloud-agent`; check the absolute executable path. Avoid registering both the plugin and standalone server. |
 | `invalid_arguments` | Read `error.issues` and `icloud-agent schema OPERATION`. JSON types are strict and extra fields are rejected. |
 | `stale_id` / `not_found` | The message/event moved, disappeared, or its folder changed IDs. Search again; don't reuse an old ID blindly. |

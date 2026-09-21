@@ -8,7 +8,7 @@ from pathlib import Path
 
 from rich_argparse import RawDescriptionRichHelpFormatter
 
-from . import __version__, auth, discovery, mail, terminal
+from . import __version__, agent_skills, auth, discovery, mail, terminal
 from .errors import AgentError, error_result
 from .operations import OPERATIONS, invoke
 
@@ -102,22 +102,26 @@ def select_access(out, account, available, *, first_login=False):
         if "add_address" not in selected:
             break
         selected = [item for item in selected if item != "add_address"]
+        out.print()
         raw = terminal.ask(out, "Existing iCloud Mail address")
         try:
             address = mail.recipients([raw])[0].casefold()
         except AgentError:
             out.print("  Enter a valid email address.", style="failure")
+            out.print()
             continue
         if address not in known:
             known.append(address)
         if address not in selected:
             selected.append(address)
+        out.print()
     account.sender_addresses = selected
     account.known_sender_addresses = known
     if account.sender_addresses:
         current_default = account.default_sender_address
         if current_default not in account.sender_addresses:
             current_default = account.sender_addresses[0]
+        out.print()
         account.default_sender_address = terminal.pick_one(
             out,
             "Default sender",
@@ -145,6 +149,7 @@ def select_access(out, account, available, *, first_login=False):
         account.calendar_ids = []
         out.print("  No calendars found.", style="muted")
     senders, calendars = len(account.sender_addresses), len(account.calendar_ids)
+    out.print()
     out.print(
         f"  {senders} sender{'s' if senders != 1 else ''} · "
         f"{calendars} calendar{'s' if calendars != 1 else ''} enabled",
@@ -231,10 +236,26 @@ def parser():
         "--check", action="store_true"
     )
     auth_commands.add_parser("configure", help="Choose enabled senders and calendars.")
-    auth_commands.add_parser("logout", help="Remove this tool’s saved credentials.")
+    auth_commands.add_parser("logout", help="Remove the app-password connection.")
+    auth_commands.add_parser("web-login", help="Sign in with your Apple Account and 2FA.")
+    auth_commands.add_parser("web-status", help="Check the saved iCloud web session.")
+    auth_commands.add_parser("web-check", help="Probe read-only Mail access with the web session.")
+    auth_commands.add_parser("web-logout", help="Remove the saved local web session.")
     setup_parser = commands.add_parser("setup", help="Install bundled agent integration.")
     setup_parser.add_argument(
         "--codex", action="store_true", help="Register MCP and install the Codex skill."
+    )
+    setup_parser.add_argument(
+        "--skills", action="store_true", help="Install the bundled skill for local agents."
+    )
+    setup_parser.add_argument(
+        "--agent",
+        action="append",
+        choices=list(agent_skills.AGENT_NAMES),
+        help="Also install for this agent (repeatable; requires --skills).",
+    )
+    setup_parser.add_argument(
+        "--copy", action="store_true", help="Copy agent skills instead of linking them."
     )
     commands.add_parser("mcp", help="Run local stdio MCP; no port, tunnel, or background daemon.")
     schema = commands.add_parser(
@@ -291,9 +312,34 @@ def main():
         if args.command == "setup":
             from .setup import setup
 
-            result = {"ok": True, "data": setup(codex=args.codex)}
+            if args.agent and not args.skills:
+                command_parser.error("--agent requires --skills")
+            if args.copy and not (args.skills or args.codex):
+                command_parser.error("--copy requires --skills or --codex")
+            agents = args.agent or []
+            if (
+                args.skills
+                and args.agent is None
+                and not args.json
+                and sys.stdout.isatty()
+                and sys.stdin.isatty()
+            ):
+                agents = agent_skills.choose_agents(terminal.console(stderr=True))
+            result = {
+                "ok": True,
+                "data": setup(codex=args.codex, skills=args.skills, agents=agents, copy=args.copy),
+            }
         elif args.command == "auth":
-            if args.action == "login":
+            if args.action.startswith("web-"):
+                from . import web_login, web_session
+
+                data = {
+                    "web-login": web_login.login,
+                    "web-status": web_session.status,
+                    "web-check": web_session.probe,
+                    "web-logout": web_session.logout,
+                }[args.action]()
+            elif args.action == "login":
                 data = login(args.no_browser)
             elif args.action == "configure":
                 data = configure()
@@ -354,6 +400,13 @@ def main():
         emit(result)
     else:
         terminal.result(terminal.console(stderr=not result["ok"]), result, args)
+        if (
+            result["ok"]
+            and sys.stdin.isatty()
+            and args.command == "auth"
+            and args.action in ("login", "web-login")
+        ):
+            agent_skills.offer(terminal.console(stderr=True))
     if not result["ok"]:
         raise SystemExit(1)
 

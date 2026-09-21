@@ -11,7 +11,7 @@
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-86b8b5" alt="MIT license"></a>
   <a href="docs/clients.md"><img src="https://img.shields.io/badge/MCP-local%20stdio-24292f" alt="Local stdio MCP"></a>
-  <a href="VERIFICATION.md"><img src="https://img.shields.io/badge/status-alpha-e2af68" alt="Alpha: live iCloud verification pending"></a>
+  <a href="VERIFICATION.md"><img src="https://img.shields.io/badge/status-alpha-e2af68" alt="Alpha: write verification pending"></a>
 </p>
 
 <p align="center">
@@ -27,8 +27,8 @@ replies, and manage events through a CLI, companion skill, or local MCP connecti
 
 **Runs on your computer. Connect once. Invoke when you need it.**
 
-> **Alpha.** Live iCloud account behavior remains unverified. See the
-> [verification record](VERIFICATION.md) for completed tests and remaining checks.
+> **Alpha.** Sign-in, sender discovery, and folder/calendar listing have live read evidence.
+> Writes and client compatibility need further verification. See the [verification record](VERIFICATION.md).
 
 ## Quick start
 
@@ -51,6 +51,10 @@ Addresses and calendars load from iCloud automatically. Choose enabled senders a
 calendars with **Space** and **Enter**, then pick your default sender. Change your
 choices later with `icloud-agent auth configure`.
 
+At the end, choose **Install agent skills** or **Finish**. Skills are installed globally
+in `~/.agents/skills/icloud-agent`, with optional links for other agents. You can also
+run `icloud-agent setup --skills` later. No Node or npm installation is needed.
+
 Restart Codex, then try:
 
 > “Use iCloud Agent to show my unread emails.”
@@ -68,6 +72,7 @@ icloud-agent schema mail_draft
 ```
 
 See [setup](docs/setup.md) for `uv`/`pipx` installation, upgrades, and removal.
+The development branch also includes an experimental [Apple Account and 2FA login](docs/setup.md#try-apple-account-sign-in).
 
 ## What it can do
 

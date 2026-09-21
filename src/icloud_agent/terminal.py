@@ -14,7 +14,17 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
-THEME = Theme({"accent": "cyan", "muted": "dim", "success": "green", "failure": "red"})
+THEME = Theme(
+    {
+        "accent": "cyan",
+        "accent_bold": "bold cyan",
+        "muted": "dim",
+        "success": "green",
+        "success_bold": "bold green",
+        "failure": "red",
+        "failure_bold": "bold red",
+    }
+)
 
 
 def console(*, stderr=False):
@@ -39,7 +49,7 @@ def literal(value):
 
 def heading(out, title):
     out.print()
-    out.print(Text.assemble(("  icloud-agent", "bold accent"), (f"  /  {title}", "muted")))
+    out.print(Text.assemble(("  icloud-agent", "accent_bold"), (f"  /  {title}", "muted")))
     out.print()
 
 
@@ -58,7 +68,7 @@ def ask(out, label, default=None, *, password=False):
     return out.input(prompt).strip() or default or ""
 
 
-def password_input(out, prompt):
+def password_input(out, prompt, *, strip=True):
     from prompt_toolkit import PromptSession
     from prompt_toolkit.clipboard import DummyClipboard
     from prompt_toolkit.history import DummyHistory
@@ -73,7 +83,7 @@ def password_input(out, prompt):
     def paste(event):
         # A copied trailing return is data, never a submit key or the next answer.
         # Keep internal whitespace intact so password validation can reject it.
-        event.current_buffer.insert_text(event.data.strip())
+        event.current_buffer.insert_text(event.data.strip() if strip else event.data)
 
     session = PromptSession(
         is_password=True,
@@ -83,7 +93,8 @@ def password_input(out, prompt):
         output=create_output(stdout=out.file),
         color_depth=ColorDepth.DEPTH_1_BIT if "NO_COLOR" in os.environ else None,
     )
-    return session.prompt(prompt.plain).strip()
+    value = session.prompt(prompt.plain)
+    return value.strip() if strip else value
 
 
 def progress(out, message):
@@ -118,11 +129,56 @@ def value_view(value):
     return Text(literal(value), overflow="fold")
 
 
+def connected(out, email, *, web=False):
+    content = Text.assemble(
+        ("✓  Connected to iCloud", "success_bold"),
+        ("\n\n" + literal(email)),
+        ("\nApple Account session saved." if web else "\nMail and Calendar are ready.", "muted"),
+    )
+    out.print()
+    out.print(
+        Padding(
+            Panel.fit(
+                content,
+                title=Text(" ✦ icloud-agent ", style="accent_bold"),
+                title_align="left",
+                border_style="success",
+                padding=(1, 3),
+            ),
+            (0, 2),
+        )
+    )
+    if web:
+        out.print()
+        out.print(Text("  Next: icloud-agent auth web-check", style="muted"))
+    out.print()
+
+
+def web_check(out, data):
+    heading(out, "connection")
+    out.print(Text("  ✓ Apple Account connected", style="success_bold"))
+    for key, name in (("aliases", "Sender addresses"), ("mailboxes", "Mail folders")):
+        check = data["checks"][key]
+        if not check["ok"]:
+            out.print(Text(f"  × {name}: " + literal(check["message"]), style="failure"))
+            continue
+        out.print(Text(f"  ✓ {name} · {check['count']}", style="success"))
+    aliases = data["checks"]["aliases"]
+    if aliases["ok"]:
+        out.print()
+        for address in aliases["addresses"]:
+            line = Text("    " + literal(address))
+            if address == aliases["default_sender"]:
+                line.append("  ← iCloud default", style="accent")
+            out.print(line)
+    out.print()
+
+
 def result(out, payload, args):
     if not payload["ok"]:
         error = payload["error"]
         heading(out, "error")
-        out.print(Text("  " + label(error["code"]), style="bold failure"))
+        out.print(Text("  " + label(error["code"]), style="failure_bold"))
         if (
             error.get("message")
             and error["message"].rstrip(".").casefold() != label(error["code"]).casefold()
@@ -134,13 +190,21 @@ def result(out, payload, args):
         out.print()
         return
     data = payload["data"]
+    if args.command == "setup" and data.get("skills") and not data["codex_registered"]:
+        from .agent_skills import installed
+
+        installed(out, data["skills"])
+        return
     action = getattr(args, "action", None)
     if args.command == "auth":
+        if action == "web-check":
+            web_check(out, data)
+            return
+        if action == "web-login":
+            connected(out, data["email"], web=True)
+            return
         if action == "login":
-            out.print()
-            out.print(Text("  Connected to iCloud", style="bold success"))
-            out.print(Text("  " + literal(data["mail_address"]), style="muted"))
-            out.print()
+            connected(out, data["mail_address"])
             return
         title = "account"
     elif args.command == "setup":
@@ -153,7 +217,7 @@ def result(out, payload, args):
         out.print(JSON(json.dumps(data, ensure_ascii=True, default=str)))
     elif args.command == "setup":
         if data["codex_registered"]:
-            out.print(Text("  Codex ready", style="bold success"))
+            out.print(Text("  Codex ready", style="success_bold"))
             out.print()
         out.print(
             Padding(
@@ -161,14 +225,20 @@ def result(out, payload, args):
                     {
                         k: v
                         for k, v in data.items()
-                        if k not in {"next", "codex_registered"} and v is not None
+                        if k not in {"next", "codex_registered", "skills", "skill"}
+                        and v is not None
                     }
                 ),
                 (0, 2),
             )
         )
+        if data.get("skills"):
+            from .agent_skills import installed
+
+            installed(out, data["skills"])
         out.print("\n  Next: icloud-agent auth login")
-        out.print(Text("  Restart your agent to load the tools.", style="muted"))
+        if not data.get("skills"):
+            out.print(Text("  Restart your agent to load the tools.", style="muted"))
     else:
         out.print(Padding(value_view(data), (0, 2)))
     out.print()

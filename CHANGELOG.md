@@ -6,6 +6,20 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Offer **Install agent skills** after login. Install the bundled skill in
+  `~/.agents/skills/icloud-agent` with optional agent links, following the Skills CLI's
+  global layout without invoking it or requiring Node/npm. Add `setup --skills`,
+  repeatable `--agent` selection, and `--copy`; migrate the old managed Codex copy.
+- Add experimental Apple Account sign-in with device/SMS 2FA, a reusable session in
+  the native credential store, and live-verified sender discovery and Mail folder checks.
+  Setup uses the web alias inventory when available; standard Mail/Calendar operations
+  still use the app-specific password.
+- Celebrate successful sign-in with a connected card; show sender addresses and the
+  iCloud default directly in `auth web-check`.
+- Add breathing room around password and verification prompts, sender selection,
+  calendar summaries, and the connection card's next step. Include an isolated
+  setup preview for reviewing the real terminal UI with example accounts.
+
 - Remove repeated setup hints and shorten the bundled agent skill. Show interrupted-write
   guidance only when cancelling a write; picker keys now say Enter continues the flow.
 

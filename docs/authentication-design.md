@@ -7,7 +7,7 @@
 The connector opens Apple's account-management page. The user generates an
 app-specific password there, pastes it into a hidden terminal prompt, and chooses
 access. The connector stores that password in the native OS credential store.
-It never needs the main Apple Account password or a browser cookie.
+This connection does not need the main Apple Account password or a browser cookie.
 Setup asks for one login email and uses it for IMAP, SMTP, and CalDAV.
 
 [Apple's app-specific-password instructions](https://support.apple.com/en-us/102654)
@@ -36,10 +36,57 @@ It included both previously configured senders and the chosen default. No person
 addresses or credentials are included in test fixtures. Apple checks permission during
 SMTP submission; setup does not send test messages.
 
-The native Mac account metadata advertised `/cc/wm/alias.json` on Apple's partitioned
-MCC service. A read-only request with the app-specific password returned HTTP 401.
-The built-in browser reached iCloud Mail sign-in; authenticated web alias responses
-have not yet been captured. Neither result rules out a browser-session alias API.
+When a valid web session is saved for the same login email, setup uses the iCloud Mail
+sender inventory instead. It expands the primary and alias local parts across Apple's
+supported domains, adds custom-domain identities, and omits inactive aliases from the
+picker. Apple's `allowSendFrom` flags and default sender are returned separately by
+`web-check`; they do not replace the user's local access selections. If the session is
+missing, expired, or unavailable, discovery uses the CalDAV identities.
+
+The native account's older `/cc/wm/alias.json` route returned HTTP 401 with an app password
+and HTTP 403 with the web session. Apple's current web preferences route succeeded.
+An endpoint failure was not evidence that aliases were inaccessible.
+
+## Apple Account web-session experiment
+
+`auth web-login` accepts the normal Apple Account password and a device or SMS
+verification code in the user's own terminal. It uses
+[pyicloud 2.7.0](https://github.com/timlaing/pyicloud/tree/2.7.0) for Apple's SRP password
+handshake, 2FA, trusted-session exchange, and iCloud service discovery. The dependency
+is pinned because the in-memory adapter uses its session and password internals.
+Changes to that pin require reviewing those integration points and running the auth tests.
+
+The main password and verification code are never saved. A separate native credential
+entry, service `icloud-agent-web`, holds the reusable session tokens and cookies.
+The adapter disables pyicloud's automatic plaintext session/cookie files before making
+requests. It enforces HTTPS, certificate verification, and Apple-hosted destinations,
+including redirects. It does not import cookies from a browser or read other apps'
+credentials. Existing app-password settings and access selections remain separate.
+
+`auth web-status` validates the session against Apple. `auth web-login` reuses a valid
+session without asking for a password; an expired session requires sign-in again.
+There is no unattended password login or background renewal. Code-based 2FA is supported;
+hardware security keys and legacy two-step verification are not implemented in this flow.
+Updated Apple terms must be reviewed on iCloud.com by the user.
+
+`auth web-check` reads sender settings from
+GET `/cc/mail/v1/account/{dsid}/preference/web/all` and queries folders through
+POST `/mailws2/v1/geqs/query` with a mailbox-domain query. Both routes were located in
+[Apple's public web client](https://www.icloud.com/system/icloud.com/2634Build25/en-gb/main.js).
+The preferences response includes unrelated forwarding, rules, and auto-reply settings;
+the parser returns only sender identities and the default sender. Folder output is a
+count, capped at 100. No message bodies, cookies, or tokens are returned.
+These are private Apple APIs whose behavior may change.
+Tests cover authentication state, cancellation, 2FA failure, credential persistence,
+redirect rejection, and request shapes using synthetic data. A successful unit test
+does not establish live alias discovery or Mail access. On September 21, 2026, a real
+user completed password/2FA sign-in locally. Fresh CLI processes reused the Keychain
+session and retrieved ten active sender addresses, the iCloud default, and twelve
+Mail folders. See the [verification record](../VERIFICATION.md).
+
+This experiment does not generate an app-specific password, replace the standard
+Mail/Calendar operations, or expand their configured access. Normal message/event
+operations still use the app-specific password with IMAP, SMTP, and CalDAV.
 
 ## Enforcement
 
@@ -71,4 +118,5 @@ scopes, public/native-client support, local redirects, and OAuth-based alias enu
 remain unverified. No enrollment request has been submitted.
 
 Official authorization could replace app passwords if it supports this project's
-local-only distribution model. Private iCloud.com request replay is not used.
+local-only distribution model. The web-session experiment uses private iCloud APIs;
+the standard Mail and Calendar operations still use IMAP, SMTP, and CalDAV.

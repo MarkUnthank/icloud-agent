@@ -17,6 +17,43 @@ The v0.3.0 suite has **68 passing tests locally on macOS / Python 3.14**.
 A local pseudo-terminal walkthrough used synthetic credentials and mocked verification/
 storage to check prompt layout and hidden password entry. It did not authenticate with Apple.
 
+The development branch's Apple web-session experiment has **129 passing tests locally
+on macOS / Python 3.14**, including password/2FA handling, session reuse, failed and
+cancelled sign-in, native-store serialization, suppression of plaintext cookie files,
+TLS enforcement, rejection of redirects to non-Apple destinations, strict alias parsing,
+and exclusion of unrelated Mail preferences. Its commands were installed and checked locally.
+
+The subsequent agent-skill installer brings the suite to **151 passing tests locally
+on macOS / Python 3.14**. Coverage includes the shared directory, relative agent links,
+explicit copies and symlink fallback, custom agent paths, unmanaged content preservation,
+migration of the old managed Codex copy, and rollback after a failed filesystem commit.
+Optional installation is tested separately from successful authentication and is omitted
+from JSON/piped login output.
+
+The installed CLI was also exercised in an isolated home directory: it installed the
+shared skill and a relative Claude Code link without invoking a subprocess. Local
+`setup --codex` migrated the previous managed skill, and Codex configuration readback
+confirmed the enabled connection used `/opt/homebrew/bin/icloud-agent mcp`.
+
+## Live read checks — September 21, 2026
+
+On Apple Silicon macOS / Python 3.14, the user completed `auth web-login` in their own
+terminal. A separate process then loaded the native Keychain session and validated it
+with Apple. Subsequent processes reused it without receiving a password or 2FA code.
+The current Mail preferences route returned ten active addresses: primary addresses,
+three aliases expanded across their supported domains, and four custom-domain addresses.
+The parser also found the configured iCloud default sender. The web Mail query returned
+twelve folders. The setup discovery path then returned the web alias inventory and
+four CalDAV calendars, with the existing default sender present and the account config
+unchanged. No message bodies were read and no Mail/Calendar writes were performed.
+
+The older native alias endpoint returned HTTP 403 with the same session; the current
+web preferences endpoint succeeded. CalDAV discovery had separately returned ten email
+identities and four calendars using the existing app-specific password. These observations
+cover one account and do not prove long-term session lifetime or every account configuration.
+
+## Automated coverage
+
 Covered behavior:
 
 - Space/arrow/Enter picker interaction, cancellation without saving, concurrent settings
@@ -58,8 +95,8 @@ GitHub-hosted macOS runner is used. The earlier clean-macOS-runner attempt was c
 
 ## What is still unverified
 
-- Live IMAP, SMTP, and CalDAV behavior against an authenticated iCloud account.
-- Real keychain persistence through the full authenticated setup flow.
+- Live mail-message reads and writes, SMTP sending, and calendar event mutations.
+- Long-term web-session expiry/recovery and live verification on additional accounts.
 - Native Windows/Linux credential stores and Windows installation.
 - ChatGPT desktop plugin installation, tool invocation, and account-specific availability.
 - Delivery, server-created Sent copies, and cleanup after a real send.

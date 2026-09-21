@@ -15,6 +15,14 @@ stores an app-specific password in the OS credential store, and loads addresses
 and calendars for selection. Never collect passwords in chat, files, tool arguments,
 or agent-captured terminals. Do not search the keychain for other credentials.
 
+The development build also has `auth web-login` for an experimental Apple Account
+password and 2FA flow. The user must run it in their own terminal; never collect their
+password or verification code. `auth web-status` validates its separate session;
+`auth web-check` lists discovered addresses and the iCloud default, and checks Mail folders.
+Discovery does not enable those senders for the agent: `mail_senders` remains the source
+for local access and the chosen default. `auth configure` uses web aliases when available.
+Web login does not authenticate the normal Mail/Calendar tools; those use the app password.
+
 Read inputs with `icloud-agent schema OPERATION --json`; omit OPERATION to list all.
 Invoke operations with `icloud-agent mail search --input FILE --json` or
 `icloud-agent call mail_search --input FILE --json`. `--input -` reads stdin.
