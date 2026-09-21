@@ -15,7 +15,11 @@ can include private data. Avoid enabling library debug logging on your real acco
 
 | Symptom or error | Meaning and next step |
 |---|---|
-| Command not found | Use the absolute executable printed by the installer, or add `~/.local/bin` to PATH on macOS/Linux. A desktop client may not inherit your shell PATH. |
+| Command not found | For Homebrew, use `"$(brew --prefix)/bin/icloud-agent"` and follow Homebrew's shell setup instructions. For uv/pipx, check the manager's bin directory is on PATH. Desktop clients may not inherit your shell PATH; rerun `setup --codex` to register the absolute path. |
+| Old version after a Homebrew install | Run `which -a icloud-agent`. An old `~/.local/bin` symlink may shadow Homebrew; follow [migration](setup.md#switching-from-the-original-source-installer). |
+| `setup_conflict` | An unmanaged skill or MCP entry has the same name. Inspect and rename/remove it yourself before rerunning setup. Existing content is preserved. |
+| `codex_missing` | Install the Codex CLI and make it available on PATH, or run `setup` without `--codex` for another local client. |
+| Homebrew first install takes several minutes | The formula currently builds native dependencies. Let Homebrew finish; later command invocations do not compile or download code. |
 | Python too old / missing venv | Install Python 3.11+ with venv support. On Windows use `py -3`. On Linux your distribution may provide `python3-venv`. |
 | `not_authenticated` | Run `icloud-agent auth login` in your own terminal. A config file alone is insufficient; the OS credential entry must exist. |
 | `interactive_login_required` | Login was launched from a pipe/agent session. Open a normal interactive terminal yourself. |

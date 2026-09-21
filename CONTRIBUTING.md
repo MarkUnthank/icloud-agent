@@ -4,11 +4,28 @@ Thanks for helping improve icloud-agent. Small, well-evidenced changes are easie
 review. For a new capability or a substantial behavior change, open an issue first so
 we can agree on scope. Bugs and documentation corrections can go straight to a PR.
 
+## Your first contribution
+
+Fork the repository, create a focused branch, and open a pull request against `main`.
+A draft PR is welcome when you want early feedback. You can work entirely with synthetic
+data; an iCloud account is not needed for the test suite. Documentation corrections,
+clearer synthetic examples, and regression tests for reproducible bugs are useful places
+to start. Check open issues and existing PRs before duplicating work.
+
+Use [good first issue](https://github.com/MarkUnthank/icloud-agent/labels/good%20first%20issue)
+for tasks explicitly scoped for newcomers and [help wanted](https://github.com/MarkUnthank/icloud-agent/labels/help%20wanted)
+for broader contributions. These labels are applied by maintainers; an empty list simply
+means no tasks have been scoped yet. Read [community conduct](CODE_OF_CONDUCT.md) and
+[getting help](SUPPORT.md) before posting.
+
 ## Development setup
 
 ```sh
-git clone https://github.com/MarkUnthank/icloud-agent.git
+# Replace YOUR-USERNAME with the owner of your fork.
+git clone https://github.com/YOUR-USERNAME/icloud-agent.git
 cd icloud-agent
+git remote add upstream https://github.com/MarkUnthank/icloud-agent.git
+git switch -c describe-your-change
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
 .venv/bin/python -m pytest -q
@@ -52,6 +69,24 @@ Please be respectful, give specific feedback, and assume good faith. Contributio
 provided under the project's [MIT license](LICENSE). Report security issues using
 [SECURITY.md](SECURITY.md), not a public issue. Support and reviews are best effort;
 there is no response-time guarantee.
+
+## How changes reach main
+
+`main` requires a pull request, an up-to-date branch, passing Linux checks, and resolved
+review conversations. Force-pushes and branch deletion are blocked, including for admins.
+Only squash merges are enabled; merged branches are deleted automatically. CODEOWNERS
+routes review requests to Mark Unthank. Maintainers decide whether a contribution fits
+and review external PRs before merging.
+
+A second-person approval is not a merge requirement while the project has a sole
+maintainer, so the maintainer can ship their own PRs after checks pass. External
+contributors cannot merge their own changes without repository write access.
+
+Workflows from all outside contributors wait for maintainer approval. This controls
+CI usage and lets a maintainer inspect workflow changes before executing them; it is
+not a judgment on the contribution. CI uses read-only tokens and Linux runners. Keep
+macOS tests local: do not add GitHub-hosted macOS jobs or self-hosted execution of fork
+code. Jobs have time limits and obsolete runs are cancelled automatically.
 
 ## Releases
 

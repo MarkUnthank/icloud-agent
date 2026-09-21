@@ -17,6 +17,7 @@ JSON Schema. [All generated schemas](tool-schemas.json) are also checked into th
 
 | Command | Behavior |
 |---|---|
+| `setup [--codex]` | Export bundled plugin; optionally register Codex MCP and install its skill. |
 | `auth login [--no-browser]` | Interactive local setup; IMAP/CalDAV checked before saving. |
 | `auth status [--check]` | Local credential presence; optionally live IMAP/CalDAV checks. |
 | `auth logout` | Remove active local credential and account config. |

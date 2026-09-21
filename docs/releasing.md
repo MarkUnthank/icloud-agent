@@ -22,7 +22,8 @@
    Run `brew update-python-resources MarkUnthank/tap/icloud-agent`
    to refresh checksummed dependencies. Review dependency/build changes, then run
    `brew reinstall --build-from-source MarkUnthank/tap/icloud-agent` and
-   `brew test MarkUnthank/tap/icloud-agent`. Commit and push the verified formula.
+   `brew test MarkUnthank/tap/icloud-agent` locally on macOS. Do not use GitHub-hosted
+   macOS runners. Commit and push the verified formula.
 9. Verify setup using the installed wheel/formula outside a source checkout. Confirm the
    exported skill and plugin are present and use a stable executable path.
 
