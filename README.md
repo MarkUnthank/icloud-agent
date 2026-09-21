@@ -43,13 +43,13 @@ icloud-agent auth login
 You need an iCloud Mail account, Apple Account two-factor authentication, and Codex
 on PATH for `setup --codex`.
 
-Login opens Apple's account page. Generate an **app-specific password** and enter it
+Login shows Apple's sign-in URL; press Enter to open it. Generate an **app-specific password** and enter it
 in the hidden terminal prompt. It is saved in your OS credential store for future
 invocations. **Enter it in your terminal, never in chat.**
 
-Choose enabled calendars and sender addresses with **Space** and **Enter**. Calendars
-load automatically; add any existing sender aliases manually. Change your choices
-later with `icloud-agent auth configure`.
+Addresses and calendars load from iCloud automatically. Choose enabled senders and
+calendars with **Space** and **Enter**, then pick your default sender. Change your
+choices later with `icloud-agent auth configure`.
 
 Restart Codex, then try:
 

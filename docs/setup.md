@@ -66,27 +66,30 @@ Run this yourself in a normal terminal:
 icloud-agent auth login
 ```
 
-1. Enter your iCloud login email address in the terminal.
-2. Enter your primary iCloud Mail address. This is the mailbox address used to sign into
-   IMAP and SMTP; it is not necessarily the address you normally send from. Press Enter
-   to use the login address from step 1.
-3. In the Apple page that opens, go to **Sign-In and Security → App-Specific Passwords**.
-4. Generate a password named `icloud-agent`.
-5. Paste the app-specific password into the hidden prompt.
-6. Add any existing sender aliases, separated by commas, or press Enter to skip.
-7. Choose enabled senders, then choose the default sender address. Your default can be
-   an alias even when the primary mailbox address is used for authentication.
-8. Choose enabled calendars: **arrow keys** move, **Space** toggles, and
+1. Enter your iCloud login email address. The CLI uses it for Mail and Calendar.
+2. At `[Press enter to open in browser]`, press Enter to open
+   `https://account.apple.com/sign-in`. Sign in, then go to
+   **Sign-In and Security → App-Specific Passwords**.
+3. Generate a password named `icloud-agent`.
+4. Paste the app-specific password into the masked prompt, then press Enter. Trailing
+   whitespace copied with the password is removed; a bracketed paste does not submit it.
+5. iCloud account addresses and calendars load automatically.
+6. Choose enabled senders, then choose the default sender address. Your default can be
+   an alias different from your login email.
+   If an address is missing, select **Add another address…** in the sender picker.
+7. Choose enabled calendars: **arrow keys** move, **Space** toggles, and
    **Enter** saves. Calendars start unchecked; choose those you want the agent to access.
    An empty selection enables none. Ctrl-C cancels without saving changes.
 
 The CLI validates IMAP and CalDAV before saving credentials. It does not send a test
 email; SMTP authentication is checked only during an actual send. It uses your
-configured mail address to authenticate. Enabled aliases can be used as senders.
-Calendar names are discovered automatically. Aliases must be entered manually: the
-app-password connection does not provide a documented alias inventory. Only add
-addresses already configured for your mailbox in iCloud Mail; Apple checks sending
-permission during SMTP submission. Login does not verify aliases by sending a message.
+login email to authenticate. Enabled aliases can be used as senders.
+Address discovery reads the account's CalDAV `calendar-user-address-set` using the
+same app-specific password. This includes iCloud aliases and custom-domain addresses
+on the account tested, but is a calendar identity list, not an SMTP permission check.
+Only select addresses you use with iCloud Mail. Apple checks sending permission during
+SMTP submission; login does not send a verification message. If Apple omits an address,
+you can add it in the picker. No browser session or second password is needed for discovery.
 
 The password is stored in the OS credential store, never in the account JSON or plugin
 configuration. Subsequent invocations reuse it. Use `auth login --no-browser` to open
@@ -109,8 +112,8 @@ icloud-agent auth logout          # remove the active local credential/config
 Apple. One active account is supported. Running login for a different account replaces
 the active config and removes the previous account's saved credential from this tool.
 
-`auth configure` reuses the stored password, loads current calendars, and restores your
-choices. Newly discovered calendars remain unchecked. Sender choices control draft
+`auth configure` reuses the stored password, reloads addresses and calendars, and restores
+your choices. Newly discovered addresses and calendars remain unchecked. Sender choices control draft
 creation and sending, including previously saved drafts; they do not filter the shared
 inbox. `mail senders` lists enabled From addresses for users and agents.
 

@@ -54,11 +54,36 @@ def ask(out, label, default=None, *, password=False):
         prompt.append(f" [{literal(default)}]", style="muted")
     prompt.append(" › ", style="accent")
     if password:
-        import getpass
-
-        out.print(prompt, end="")
-        return getpass.getpass("", stream=out.file).strip()
+        return password_input(out, prompt)
     return out.input(prompt).strip() or default or ""
+
+
+def password_input(out, prompt):
+    from prompt_toolkit import PromptSession
+    from prompt_toolkit.clipboard import DummyClipboard
+    from prompt_toolkit.history import DummyHistory
+    from prompt_toolkit.key_binding import KeyBindings
+    from prompt_toolkit.keys import Keys
+    from prompt_toolkit.output import ColorDepth
+    from prompt_toolkit.output.defaults import create_output
+
+    bindings = KeyBindings()
+
+    @bindings.add(Keys.BracketedPaste)
+    def paste(event):
+        # A copied trailing return is data, never a submit key or the next answer.
+        # Keep internal whitespace intact so password validation can reject it.
+        event.current_buffer.insert_text(event.data.strip())
+
+    session = PromptSession(
+        is_password=True,
+        history=DummyHistory(),
+        clipboard=DummyClipboard(),
+        key_bindings=bindings,
+        output=create_output(stdout=out.file),
+        color_depth=ColorDepth.DEPTH_1_BIT if "NO_COLOR" in os.environ else None,
+    )
+    return session.prompt(prompt.plain).strip()
 
 
 def progress(out, message):
@@ -98,7 +123,10 @@ def result(out, payload, args):
         error = payload["error"]
         heading(out, "error")
         out.print(Text("  " + label(error["code"]), style="bold failure"))
-        if error.get("message"):
+        if (
+            error.get("message")
+            and error["message"].rstrip(".").casefold() != label(error["code"]).casefold()
+        ):
             out.print(Padding(Text(literal(error["message"])), (1, 2, 0, 2)))
         for issue in error.get("issues", []):
             field = ".".join(str(x) for x in issue["field"])
@@ -112,10 +140,6 @@ def result(out, payload, args):
             out.print()
             out.print(Text("  Connected to iCloud", style="bold success"))
             out.print(Text("  " + literal(data["mail_address"]), style="muted"))
-            out.print("\n  Mail and Calendar verified. SMTP is checked when you send.")
-            out.print(
-                Text("  Next: restart your agent, or run icloud-agent mail search", style="muted")
-            )
             out.print()
             return
         title = "account"
@@ -162,7 +186,7 @@ def choose(out, title, choices, selected):
             questionary.Choice(literal(name), value=value, checked=value in selected)
             for name, value in choices
         ],
-        instruction="(↑↓ move · Space toggle · Enter save)",
+        instruction="(↑↓ move · Space toggle · Enter continue)",
         style=questionary.Style(
             [
                 ("qmark", "fg:ansicyan"),

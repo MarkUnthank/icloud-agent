@@ -6,7 +6,7 @@ import pytest
 from prompt_toolkit.application import create_app_session
 from prompt_toolkit.input import create_pipe_input
 
-from icloud_agent import auth, calendar, cli, mail, operations, terminal
+from icloud_agent import auth, calendar, cli, discovery, mail, operations, terminal
 from icloud_agent.errors import AgentError
 
 CALENDAR = "https://p01-caldav.icloud.com/123/home/"
@@ -139,7 +139,7 @@ def test_configure_cancel_preserves_saved_settings(monkeypatch, tmp_path):
     monkeypatch.setattr(auth, "operation_lock", nullcontext)
     monkeypatch.setattr(auth, "save", lambda a: pytest.fail("Unexpected save"))
     monkeypatch.setattr(cli.sys, "stdin", SimpleNamespace(isatty=lambda: True))
-    monkeypatch.setattr(calendar, "discover", lambda a: [])
+    monkeypatch.setattr(discovery, "account_resources", lambda a: {})
 
     def cancel(*args):
         raise KeyboardInterrupt
@@ -158,7 +158,7 @@ def test_configure_refuses_concurrent_replacement(monkeypatch, tmp_path):
     monkeypatch.setattr(auth, "operation_lock", nullcontext)
     monkeypatch.setattr(auth, "save", lambda a: pytest.fail("Unexpected save"))
     monkeypatch.setattr(cli.sys, "stdin", SimpleNamespace(isatty=lambda: True))
-    monkeypatch.setattr(calendar, "discover", lambda a: [])
+    monkeypatch.setattr(discovery, "account_resources", lambda a: {})
     monkeypatch.setattr(cli, "select_access", lambda *args: path.write_text("replaced settings"))
     with pytest.raises(AgentError, match="settings changed"):
         cli.configure()

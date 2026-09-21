@@ -74,4 +74,4 @@ not. Changes in these areas should start with a focused issue describing the int
 user behavior and protocol requirements, not a promise of an imminent feature.
 
 The [authentication decisions](authentication-design.md) explain the app-password
-flow, alias limitation, and how access selections are enforced.
+flow, address discovery and its limits, and how access selections are enforced.

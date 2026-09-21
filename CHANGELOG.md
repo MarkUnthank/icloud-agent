@@ -6,8 +6,20 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
-- Clarify the login and primary mailbox prompts, and let an enabled alias be chosen as
-  the default sender independently of the IMAP/SMTP login address.
+- Remove repeated setup hints and shorten the bundled agent skill. Show interrupted-write
+  guidance only when cancelling a write; picker keys now say Enter continues the flow.
+
+- Load iCloud account email identities through CalDAV during login and configuration;
+  show them directly in the sender picker and preserve the selected default. Manual
+  additions are available inside the picker for addresses Apple omits.
+
+- Handle bracketed password pastes without submitting copied newlines; trim outer whitespace,
+  mask input, and require Enter to continue.
+
+- Show Apple's full sign-in URL and wait for Enter before opening the browser during login.
+
+- Ask for one iCloud login email for Mail and Calendar. Let an enabled alias be chosen
+  as the default sender independently of the login email.
 
 ## 0.3.0 — 2026-09-21
 
