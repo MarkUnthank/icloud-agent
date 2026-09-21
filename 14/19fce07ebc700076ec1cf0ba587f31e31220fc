@@ -1,0 +1,20 @@
+README.md
+  s_6fe6e02598edf3::t_4639a08ef97520 88-89
+  s_6fe6e02598edf3::t_2c9296ff1d8a3a 1-10,32-62,64-65,84-85,90-91,93-95,97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1419fce07ebc700076ec1cf0ba587f31e31220fc",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
