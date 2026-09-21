@@ -41,6 +41,11 @@ JSON Schema. [All generated schemas](tool-schemas.json) are also checked into th
 | [`calendar_list`](#calendar_list) | `calendar list` | Read |
 | [`calendar_search`](#calendar_search) | `calendar search` | Read |
 | [`calendar_read`](#calendar_read) | `calendar read` | Read |
+| [`calendar_draft`](#calendar_draft) | `calendar draft` | Write |
+| [`calendar_drafts`](#calendar_drafts) | `calendar drafts` | Read |
+| [`calendar_read_draft`](#calendar_read_draft) | `calendar read-draft` | Read |
+| [`calendar_update_draft`](#calendar_update_draft) | `calendar update-draft` | Write |
+| [`calendar_discard_draft`](#calendar_discard_draft) | `calendar discard-draft` | Write |
 | [`calendar_create`](#calendar_create) | `calendar create` | Write |
 | [`calendar_update`](#calendar_update) | `calendar update` | Write |
 | [`calendar_delete`](#calendar_delete) | `calendar delete` | Write |
@@ -147,9 +152,9 @@ Read a complete event resource and its ETag. Required before changing or deletin
 |---|---|---|---|---|
 | `event_id` | string | Yes | — | — |
 
-## calendar_create
+## calendar_draft
 
-Create a standalone personal event. Timed values require UTC offsets. All-day end dates are exclusive.
+Prepare a local draft of a standalone personal event. Reads the destination calendar name but creates nothing in iCloud. Timed values require UTC offsets; all-day end dates are exclusive. Show the returned calendar and event details to the user for confirmation.
 
 | Field | Type | Required | Default | Meaning and constraints |
 |---|---|---|---|---|
@@ -159,6 +164,57 @@ Create a standalone personal event. Timed values require UTC offsets. All-day en
 | `end` | string | Yes | — | — |
 | `description` | string | No | `""` | maxLength: `100000` |
 | `location` | string | No | `""` | maxLength: `2000` |
+
+## calendar_drafts
+
+List this account's local calendar drafts and creation attempts, newest first.
+
+| Field | Type | Required | Default | Meaning and constraints |
+|---|---|---|---|---|
+| `limit` | integer | No | `20` | maximum: `100`; minimum: `1` |
+| `before` | integer or null | No | `null` | Pagination cursor from next_before. |
+
+## calendar_read_draft
+
+Read a local calendar draft, its status, and its review hash. Does not contact iCloud.
+
+| Field | Type | Required | Default | Meaning and constraints |
+|---|---|---|---|---|
+| `draft_id` | string | Yes | — | pattern: `^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$` |
+
+## calendar_update_draft
+
+Revise a pending local calendar draft using its last-read hash. Creates nothing in iCloud. Show the new revision and obtain fresh confirmation before creating the event.
+
+| Field | Type | Required | Default | Meaning and constraints |
+|---|---|---|---|---|
+| `draft_id` | string | Yes | — | pattern: `^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$` |
+| `expected_sha256` | string | Yes | — | sha256 of the draft revision reviewed by the user.; pattern: `^[a-f0-9]{64}$` |
+| `calendar_id` | string or null | No | `null` | — |
+| `title` | string or null | No | `null` | — |
+| `start` | string or null | No | `null` | — |
+| `end` | string or null | No | `null` | — |
+| `description` | string or null | No | `null` | — |
+| `location` | string or null | No | `null` | — |
+
+## calendar_discard_draft
+
+Discard a pending local calendar draft using its last-read hash. Does not delete an iCloud event. Creation-attempt records cannot be discarded.
+
+| Field | Type | Required | Default | Meaning and constraints |
+|---|---|---|---|---|
+| `draft_id` | string | Yes | — | pattern: `^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$` |
+| `expected_sha256` | string | Yes | — | sha256 of the draft revision reviewed by the user.; pattern: `^[a-f0-9]{64}$` |
+
+## calendar_create
+
+Create the exact local calendar draft confirmed by the user. Requires draft_id, its reviewed sha256, and confirmed:true. Never call before showing the proposal and receiving confirmation. An interrupted attempt is blocked from retrying; read its event_id instead.
+
+| Field | Type | Required | Default | Meaning and constraints |
+|---|---|---|---|---|
+| `draft_id` | string | Yes | — | pattern: `^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$` |
+| `expected_sha256` | string | Yes | — | sha256 of the draft revision reviewed by the user.; pattern: `^[a-f0-9]{64}$` |
+| `confirmed` | boolean | Yes | — | Set true only after the user confirms this exact draft revision.; const: `True` |
 
 ## calendar_update
 

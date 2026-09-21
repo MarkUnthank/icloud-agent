@@ -6,6 +6,12 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Add local calendar drafts with read, list, revise, and discard operations. Require
+  explicit confirmation and the current draft hash for event creation. Persist attempts
+  before writing so an interrupted creation cannot be repeated. `calendar_create` now
+  accepts `draft_id`, `expected_sha256`, and `confirmed:true` instead of raw event fields.
+- Preserve fixed-offset event times by encoding timed CalDAV values in UTC; leave
+  all-day dates unchanged.
 - Mark the project as beta in the README and package metadata; retain the documented
   live verification limits.
 - Start optional agent selections unchecked. Show a live selection count above the

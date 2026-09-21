@@ -37,7 +37,7 @@ reduce the underlying app-specific password's permissions at Apple.
 
 Application paths use `platformdirs`. Defaults are:
 
-| Platform | Account config | Send journal and operation lock |
+| Platform | Account config | Drafts, attempt records, and operation lock |
 |---|---|---|
 | macOS | `~/Library/Application Support/icloud-agent/account.json` | `~/Library/Application Support/icloud-agent/` |
 | Linux | `~/.config/icloud-agent/account.json` | `~/.local/state/icloud-agent/` |
@@ -45,7 +45,12 @@ Application paths use `platformdirs`. Defaults are:
 
 Linux XDG variables may override defaults. The local installer's runtime/plugin
 location is distinct from platformdirs on some platforms; see [setup](setup.md).
-The journal consists of `send-*.json` files; the lock is `operations.lock`.
+The mail journal consists of `send-*.json` files; the lock is `operations.lock`.
+`calendar-drafts.sqlite3` stores account-scoped event proposals and creation attempts.
+It includes calendar IDs/names, titles, dates/times, descriptions, locations, revision
+hash inputs, and creation/readback results. It contains no passwords. SQLite transactions
+persist the attempt before the CalDAV PUT. The database uses private directory/file
+permissions; event details are not separately encrypted at rest.
 
 Agent skills live in `~/.agents/skills/icloud-agent`, with optional links or copies
 in other agents' skill directories. Skill installation uses bundled files and does
@@ -60,12 +65,15 @@ mode is not a complete Windows ACL policy. Native Windows/Linux credential store
 not been live-tested by this project.
 
 The journal contains Message-ID and submission status and may contain refused recipient
-addresses. It stores no subject or body. Inbox messages/events are not persistently
-cached by the tool. Your client, shell redirection, or input JSON files may store data
+addresses. It stores no subject or body. Inbox messages and fetched calendar events are
+not generally cached; local calendar proposals and their creation results are retained
+as described above. Your client, shell redirection, or input JSON files may store data
 separately. Delete sensitive input/output files when you no longer need them.
 
-`auth logout` removes the active config and keychain credential but retains the journal.
-Removing the journal removes duplicate-attempt protection. To remove the integration
+`auth logout` removes the active config and keychain credential but retains write-attempt
+records and calendar drafts. Pending drafts can be discarded while logged into their
+account; attempted/completed records are retained to prevent duplicate submissions.
+Removing the mail journal or draft database removes that protection. To remove the integration
 completely, follow [removal instructions](setup.md#remove) and revoke the app-specific
 password at Apple.
 
@@ -78,17 +86,26 @@ for the agent, not a guarantee against all prompt-injection attacks.
 
 The shared operation layer validates strict input schemas and serializes local mutations.
 Mail references include UIDVALIDITY. Calendar writes use conditional ETags. A draft's
-content must match the hash read before sending. These checks reduce stale writes;
+content must match the hash read before sending. Calendar creation requires a stored
+draft, its current revision hash, and `confirmed:true`. Changes invalidate the old hash;
+attempted revisions cannot be edited or discarded. These checks reduce stale writes;
 they do not determine whether the user's intent authorizes an action.
 
 The CLI provides write capability to the local user. Authorization and confirmation
-remain the invoking client's responsibility. An instruction to draft does not mean send.
+remain the invoking client's responsibility. The confirmation flag is a caller assertion,
+not an independent human-verification mechanism. The agent must show the calendar proposal
+and wait for approval before passing it. An instruction to draft does not mean send or create.
 MCP annotations describe actions but do not enforce account-level read/write separation.
 
 SMTP has no universal exactly-once delivery guarantee. The tool records intent before
 submitting and blocks repeated attempts for that draft ID, including uncertain failures.
 This can require manual investigation even when a failed attempt never reached Apple.
 It cannot deduplicate a manually copied/new draft or a journal that has been removed.
+
+Calendar creation likewise records its attempt before the request, uses a stable event
+URL and `If-None-Match: *`, and blocks resubmission after an uncertain result. The returned
+event ID supports readback. Completed requests return the stored result on repetition.
+This does not deduplicate separately prepared drafts of the same event.
 
 ## Reporting
 

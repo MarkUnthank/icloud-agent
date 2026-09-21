@@ -177,7 +177,7 @@ Upgrading from 0.2.x requires one new `auth login` to explicitly choose access; 
 account settings do not silently grant access to every calendar.
 
 Rerun setup to refresh the bundled skill/plugin, then restart your agent. Credentials
-and the send journal live outside the package and are retained. For uv/pipx, reinstall
+and write-attempt records/calendar drafts live outside the package and are retained. For uv/pipx, reinstall
 using the new version's wheel URL from [Releases](https://github.com/MarkUnthank/icloud-agent/releases)
 and the manager's `--force` option. Review the changelog before updating dependent scripts.
 
@@ -209,7 +209,8 @@ run `brew uninstall icloud-agent`, `pipx uninstall icloud-agent`, or
 plugin directory separately. For the source installer, remove its runtime and
 `~/.local/bin/icloud-agent` symlink. Delete only paths belonging to this project.
 
-Account metadata and the journal use [platform-specific locations](security.md#local-state).
-Logout removes account metadata and the active keychain entry, but intentionally keeps
-the send journal. Deleting that journal removes protection against repeated sends of
-previously attempted draft IDs. Do not clear it merely to retry a failed send.
+Account metadata, calendar drafts, and attempt records use
+[platform-specific locations](security.md#local-state). Logout removes account metadata
+and the active keychain entry, but retains the mail journal and calendar-draft database.
+Deleting those records removes protection against repeated writes. Do not clear them
+merely to retry a failed send or event creation.
