@@ -1,0 +1,113 @@
+docs/assets/README.md
+  s_6fe6e02598edf3::t_972567221db482 1-26
+.editorconfig
+  s_6fe6e02598edf3::t_7ea317ab14c1eb 1-12
+.gitattributes
+  s_6fe6e02598edf3::t_f3c6090c6a41bb 1-4
+.github/CODEOWNERS
+  s_6fe6e02598edf3::t_1daadfff033ada 1
+.github/ISSUE_TEMPLATE/bug_report.yml
+  s_6fe6e02598edf3::t_044d67828231c9 1-46
+.github/ISSUE_TEMPLATE/config.yml
+  s_6fe6e02598edf3::t_2e7c45fde6046f 1-8
+.github/ISSUE_TEMPLATE/feature_request.yml
+  s_6fe6e02598edf3::t_9c3f7b96c19a7c 1-23
+.github/dependabot.yml
+  s_6fe6e02598edf3::t_4f4febdf25d38c 1-15
+.github/pull_request_template.md
+  s_6fe6e02598edf3::t_50bae28a524259 1-15
+.github/workflows/test.yml
+  s_6fe6e02598edf3::t_7a3310fd3f6532 1-63
+.gitignore
+  s_db1c8aca42025f::t_be48fa78195688 1-8
+CHANGELOG.md
+  s_6fe6e02598edf3::t_7983ea5bf31c74 1-29
+CONTRIBUTING.md
+  s_6fe6e02598edf3::t_366d3bee548e32 1-59
+LICENSE
+  s_6fe6e02598edf3::t_c6d8ab4a0dff88 1-21
+README.md
+  s_6fe6e02598edf3::t_3ec5227207db45 1-140
+SECURITY.md
+  s_6fe6e02598edf3::t_08663d0706ef27 1-27
+VERIFICATION.md
+  s_6fe6e02598edf3::t_9e8e4cdb51d090 1-60
+docs/architecture.md
+  s_6fe6e02598edf3::t_e89b90aeba1a7e 1-73
+docs/clients.md
+  s_6fe6e02598edf3::t_3515afffcf6ebf 1-113
+docs/reference.md
+  s_6fe6e02598edf3::t_479b97c8e047df 1-178
+docs/releasing.md
+  s_6fe6e02598edf3::t_945636c406c57d 1-23
+docs/security.md
+  s_6fe6e02598edf3::t_d47129bdbf0861 1-87
+docs/setup.md
+  s_6fe6e02598edf3::t_f6642a8886c4a7 1-154
+docs/tool-schemas.json
+  s_6fe6e02598edf3::t_d4dd86475e47b7 1-440
+docs/troubleshooting.md
+  s_6fe6e02598edf3::t_b541fb5b0fef3e 1-48
+docs/usage.md
+  s_6fe6e02598edf3::t_af909756ed1fa8 1-184
+examples/calendar-event.json
+  s_6fe6e02598edf3::t_faf943debdd115 1-7
+examples/mail-draft.json
+  s_6fe6e02598edf3::t_95d84535eee1b9 1-5
+examples/mail-search.json
+  s_6fe6e02598edf3::t_d6b252ebe1fe42 1-6
+plugins/icloud-agent/.codex-plugin/plugin.json
+  s_6fe6e02598edf3::t_72918bcd02c7e4 1-19
+plugins/icloud-agent/.mcp.json
+  s_6fe6e02598edf3::t_bd9ea9f33b2173 1-10
+plugins/icloud-agent/skills/icloud-agent/SKILL.md
+  s_6fe6e02598edf3::t_4758eda08feda2 1-52
+pyproject.toml
+  s_6fe6e02598edf3::t_9fdc286fa834db 1-52
+scripts/check_docs.py
+  s_6fe6e02598edf3::t_d055d12f3ef816 1-61
+scripts/generate_reference.py
+  s_6fe6e02598edf3::t_d933d4ee5c4fd7 1-135
+src/icloud_agent/__init__.py
+  s_db1c8aca42025f::t_ecd2a83e95780e 1-3
+src/icloud_agent/calendar.py
+  s_6fe6e02598edf3::t_cc2e00315f1b98 1-345
+src/icloud_agent/cli.py
+  s_6fe6e02598edf3::t_cb56a826c688a9 1-178
+src/icloud_agent/errors.py
+  s_6fe6e02598edf3::t_78e1614e510c74 1-21
+src/icloud_agent/mail.py
+  s_6fe6e02598edf3::t_d1cc363f9bf6dd 1-343
+src/icloud_agent/mcp_server.py
+  s_6fe6e02598edf3::t_f65b7fbcbc4cae 1-42
+src/icloud_agent/operations.py
+  s_6fe6e02598edf3::t_5528ba058fc846 1-218
+tests/test_installer.py
+  s_6fe6e02598edf3::t_cba5506bf5e407 1-40
+tests/test_stdio.py
+  s_6fe6e02598edf3::t_78f8965f96d307 1-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2f7e8b74ed79943ace1dcc322b073de642646930",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    },
+    "s_db1c8aca42025f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0bd5c-5131-7810-a262-39345821ee64",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
