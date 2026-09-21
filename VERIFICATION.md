@@ -34,7 +34,14 @@ validators passed. These checks are not proof of live Apple behavior or use in C
 
 A v0.2.0 wheel was installed in a fresh environment and `setup` exported its plugin
 and skill from outside the checkout. The CLI version and schema-only invocation passed.
-Homebrew formula checks are tracked in the [tap](https://github.com/MarkUnthank/homebrew-tap).
+The published v0.2.0 source archive was installed through Homebrew on Apple Silicon
+macOS. Formula style, strict audit, dependency/source checksum verification, and
+`brew test` passed. `setup --codex` installed the bundled skill and registered
+`/opt/homebrew/bin/icloud-agent`; Codex readback confirmed an enabled stdio connection.
+The initial source build took approximately six minutes after dependencies were present.
+The formula applies Homebrew's `ENV.O0` only while building qh3, whose AWS-LC entropy
+implementation requires unoptimized C. Compiler output confirmed `-O0` and the build passed.
+Clean-runner installation checks are tracked in the [tap CI](https://github.com/MarkUnthank/homebrew-tap/actions/workflows/tests.yml).
 
 ## What is still unverified
 
