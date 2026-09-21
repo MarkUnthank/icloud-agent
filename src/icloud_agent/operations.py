@@ -5,7 +5,7 @@ from datetime import date
 from platformdirs import user_state_path
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-from . import auth, calendar, mail
+from . import auth, calendar, calendar_drafts, mail
 from .errors import AgentError, error_result
 
 
@@ -114,13 +114,53 @@ class CalendarRead(Arguments):
     event_id: str
 
 
-class CalendarCreate(Arguments):
+class CalendarDraft(Arguments):
     calendar_id: str
     title: str = Field(min_length=1, max_length=2000)
     start: str
     end: str
     description: str = Field(default="", max_length=100_000)
     location: str = Field(default="", max_length=2000)
+
+
+class CalendarDrafts(Arguments):
+    limit: int = Field(default=20, ge=1, le=100)
+    before: int | None = Field(
+        default=None, ge=1, description="Pagination cursor from next_before."
+    )
+
+
+class CalendarReadDraft(Arguments):
+    draft_id: str = Field(pattern=r"^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$")
+
+
+class CalendarReviewedDraft(CalendarReadDraft):
+    expected_sha256: str = Field(
+        pattern=r"^[a-f0-9]{64}$", description="sha256 of the draft revision reviewed by the user."
+    )
+
+
+class CalendarCreate(CalendarReviewedDraft):
+    confirmed: bool = Field(
+        description="Set true only after the user confirms this exact draft revision.",
+        json_schema_extra={"const": True},
+    )
+
+    @field_validator("confirmed")
+    @classmethod
+    def explicit_confirmation(cls, value):
+        if not value:
+            raise ValueError("The reviewed draft requires explicit user confirmation.")
+        return value
+
+
+class CalendarUpdateDraft(CalendarReviewedDraft):
+    calendar_id: str | None = None
+    title: str | None = Field(default=None, min_length=1, max_length=2000)
+    start: str | None = None
+    end: str | None = None
+    description: str | None = Field(default=None, max_length=100_000)
+    location: str | None = Field(default=None, max_length=2000)
 
 
 class CalendarUpdate(CalendarRead):
@@ -144,6 +184,7 @@ class Operation:
     description: str
     write: bool = False
     destructive: bool = False
+    open_world: bool = True
 
 
 def send(account, **kwargs):
@@ -220,11 +261,46 @@ OPERATIONS = {
         calendar.read,
         "Read a complete event resource and its ETag. Required before changing or deleting events.",
     ),
+    "calendar_draft": Operation(
+        CalendarDraft,
+        calendar_drafts.draft,
+        "Prepare a local draft of a standalone personal event. Reads the destination calendar name but creates nothing in iCloud. "
+        "Timed values require UTC offsets; all-day end dates are exclusive. Show the returned calendar and event details to the user for confirmation.",
+        True,
+    ),
+    "calendar_drafts": Operation(
+        CalendarDrafts,
+        calendar_drafts.drafts,
+        "List this account's local calendar drafts and creation attempts, newest first.",
+        open_world=False,
+    ),
+    "calendar_read_draft": Operation(
+        CalendarReadDraft,
+        calendar_drafts.read,
+        "Read a local calendar draft, its status, and its review hash. Does not contact iCloud.",
+        open_world=False,
+    ),
+    "calendar_update_draft": Operation(
+        CalendarUpdateDraft,
+        calendar_drafts.update,
+        "Revise a pending local calendar draft using its last-read hash. Creates nothing in iCloud. "
+        "Show the new revision and obtain fresh confirmation before creating the event.",
+        True,
+    ),
+    "calendar_discard_draft": Operation(
+        CalendarReviewedDraft,
+        calendar_drafts.discard,
+        "Discard a pending local calendar draft using its last-read hash. Does not delete an iCloud event. "
+        "Creation-attempt records cannot be discarded.",
+        True,
+        True,
+        open_world=False,
+    ),
     "calendar_create": Operation(
         CalendarCreate,
-        calendar.create,
-        "Create a standalone personal "
-        "event. Timed values require UTC offsets. All-day end dates are exclusive.",
+        calendar_drafts.create,
+        "Create the exact local calendar draft confirmed by the user. Requires draft_id, its reviewed sha256, and confirmed:true. "
+        "Never call before showing the proposal and receiving confirmation. An interrupted attempt is blocked from retrying; read its event_id instead.",
         True,
     ),
     "calendar_update": Operation(

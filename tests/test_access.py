@@ -30,7 +30,7 @@ def account():
     [
         ("calendar_search", {"calendar_id": CALENDAR, "start": "2026-10-01", "end": "2026-10-02"}),
         (
-            "calendar_create",
+            "calendar_draft",
             {"calendar_id": CALENDAR, "title": "Test", "start": "2026-10-01", "end": "2026-10-02"},
         ),
         ("calendar_read", {"event_id": calendar.event_id(CALENDAR, CALENDAR + "event.ics")}),

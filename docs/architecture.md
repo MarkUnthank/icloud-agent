@@ -33,6 +33,7 @@ flowchart LR
 | `auth.py` | Native credential backend, private config, account lifecycle |
 | `mail.py` | IMAPClient, Python email/SMTP, message references, send journal |
 | `calendar.py` | python-caldav, iCalendar parsing, Apple URL checks, conditional writes |
+| `calendar_drafts.py` | Account-scoped SQLite proposals, revision hashes, and durable creation attempts |
 | `errors.py` | Safe error envelopes without raw protocol exceptions |
 
 The CLI and MCP perform the same operations; there is no second implementation to keep
@@ -49,8 +50,11 @@ is present. Each protocol operation opens a connection and closes it afterward.
   fail separately from submission.
 - Calendar IDs come from discovery. Event resources must be under the selected
   calendar on an allowed HTTPS iCloud host. Redirects are checked before following.
-- Calendar updates/deletes require the last-read ETag and an HTTP conditional write.
-  Creates use If-None-Match. Unsupported series/meeting edits fail explicitly.
+- Calendar creation follows local draft → review → explicit confirmation. Every revision
+  changes the review hash. SQLite commits the creation attempt before a conditional PUT
+  to a stable event URL; interrupted attempts cannot be submitted again. Completed
+  requests return their stored result. Updates/deletes require the last-read ETag and
+  an HTTP conditional write. Unsupported series/meeting edits fail explicitly.
 - Operations and configuration saves share an operation lock. This cannot prevent another calendar/mail
   client from editing data; server preconditions and readbacks address that boundary.
 - Unexpected errors omit raw protocol details. Returned mail/calendar contents are

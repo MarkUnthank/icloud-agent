@@ -175,20 +175,75 @@ items, not a server-side pagination request. Occurrences may share the same reso
 `calendar read` accepts `{"event_id":"…"}` and returns the complete resource's event
 summaries and its ETag. It does not expose an arbitrary CalDAV URL fetch.
 
-## Create, edit, and delete personal events
+## Draft and confirm a personal event
 
-Copy `examples/calendar-event.json`, replace its calendar ID, and choose your times:
+Copy `examples/calendar-event.json` to `event.json`, replace its calendar ID, and choose
+your times. Preparing a draft reads the calendar name and saves the proposal locally;
+it creates nothing in iCloud.
 
 ```sh
-icloud-agent calendar create --input event.json --dry-run
-icloud-agent calendar create --input event.json
+icloud-agent calendar draft --input event.json
 ```
+
+The result contains `draft_id`, `revision`, `sha256`, and an `event` with the destination
+calendar's name and ID, title, start/end, all-day status, location, and description.
+Review these details. Agents must show the proposal and wait for the user's explicit
+confirmation before creating it.
+
+After confirming the proposal, use its ID and hash:
+
+```sh
+icloud-agent calendar create --input - <<'JSON'
+{"draft_id":"PASTE_DRAFT_ID","expected_sha256":"PASTE_REVIEWED_SHA256","confirmed":true}
+JSON
+```
+
+`confirmed:true` records the caller's confirmation; it does not prompt the user. The
+agent/client is responsible for obtaining that confirmation first. `calendar create`
+accepts only reviewed drafts, not raw event fields. This replaces its previous input
+schema. `--dry-run` only validates schemas and does not save a proposal or confirm it.
+
+Use `calendar drafts` to find local proposals and creation attempts for the active
+account. `limit` defaults to 20; pass `next_before` as `before` to get another page.
+To read a proposal:
+
+```sh
+icloud-agent calendar read-draft --input - <<'JSON'
+{"draft_id":"PASTE_DRAFT_ID"}
+JSON
+```
+
+To change it, supply its current hash and the fields to replace:
+
+```sh
+icloud-agent calendar update-draft --input - <<'JSON'
+{"draft_id":"PASTE_DRAFT_ID","expected_sha256":"PASTE_CURRENT_SHA256","title":"Lunch at the café"}
+JSON
+```
+
+Every revision changes the hash, even if it restores earlier details. Review the new
+proposal and obtain fresh confirmation. `calendar discard-draft` takes `draft_id` and
+`expected_sha256` to remove a pending local proposal without contacting iCloud. It cannot
+remove an attempted or completed creation record, and never deletes a calendar event.
 
 Timed events require ISO timestamps with UTC offsets, such as
 `2026-10-01T10:00:00+02:00`. These express fixed offsets; the CLI does not infer your
 IANA timezone or daylight-saving rules. Resolve the correct offset for the event date.
 All-day events use dates and an **exclusive** end date: October 1 through October 2
 means one all-day event on October 1. Start/end must use the same type, with end later.
+
+Creation rechecks calendar access and writes once to a stable event URL with
+`If-None-Match: *`. Repeating a completed request returns its saved result and
+`already_created:true`. An interrupted or failed submission returns
+`calendar_create_unconfirmed` and an `event_id` to read; do not retry or prepare a
+replacement to bypass the attempt record. A crash can occur before Apple receives the
+request, so an uncertain attempt does not prove that an event exists.
+
+Drafts and attempt records live in the private local state directory, scoped to the
+login account. They survive process restarts and logout. They are not native iCloud
+calendar drafts; see [local state](security.md#local-state).
+
+## Edit and delete personal events
 
 To edit, first read the event and then supply its ETag and only fields you want to change:
 

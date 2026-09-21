@@ -8,7 +8,17 @@ Tests use synthetic data and protocol doubles for Apple services. A real subproc
 exercises the stdio MCP handshake, tool discovery, and unauthenticated error path.
 The suite requires no Apple Account and performs no live mailbox/calendar writes.
 
-The full suite passed **160 tests locally on macOS / Python 3.14** during merge
+The calendar-draft feature passed **188 tests locally on macOS / Python 3.14**.
+Regression cases cover persistent account-scoped drafts, pagination, revisions and
+stale hashes, strict confirmation, discarding, disabled destinations, fixed-offset
+and all-day times, conditional creation, failed readback, HTTP/transport failures,
+interruption, and concurrent attempts. A second creation cannot issue another PUT.
+The real MCP subprocess advertises all 19 tools. Lint/format, generated schemas,
+80 local documentation links, four example inputs, and skill validation passed.
+These are synthetic transport tests; the new workflow has not been tested against a
+live iCloud calendar.
+
+Before the calendar-draft feature, the full suite passed **160 tests locally on macOS / Python 3.14** during merge
 preparation on September 21, 2026, including sender-name regression cases. Lint,
 formatting, generated references, 79 local documentation links, three example schemas,
 release metadata, and skill/plugin validation passed. Source and wheel builds passed.
@@ -92,7 +102,9 @@ Covered behavior:
   sending, uncertain-send blocking, and targeted UID expunge.
 - Calendar time validation, host/redirect restrictions, resource paths, ETags, preservation
   of unknown fields, and recurrence/attendee mutation boundaries.
-- MCP initialization, 14 schemas/annotations, and a safe unauthenticated response.
+- Local calendar draft persistence and account isolation, revision-bound confirmation,
+  draft discard, one creation attempt, and UTC encoding of fixed-offset times.
+- MCP initialization, tool schemas/annotations, and a safe unauthenticated response.
 - Installer wiring in an isolated fake home with mocked package installation/registration.
 - Bundled plugin/skill export, custom `CODEX_HOME`, unmanaged configuration protection,
   and preservation of stable executable symlinks across package-manager upgrades.

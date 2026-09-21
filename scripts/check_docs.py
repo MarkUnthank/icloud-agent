@@ -41,11 +41,13 @@ def main():
             assert target.is_relative_to(ROOT), f"Link escapes repo: {path}: {link}"
             assert target.exists(), f"Missing link target: {path}: {link}"
             count += 1
-    for file, operation in {
+    examples = {
         "mail-search.json": "mail_search",
         "mail-draft.json": "mail_draft",
-        "calendar-event.json": "calendar_create",
-    }.items():
+        "calendar-event.json": "calendar_draft",
+        "calendar-create.json": "calendar_create",
+    }
+    for file, operation in examples.items():
         OPERATIONS[operation].model.model_validate(
             json.loads((ROOT / "examples" / file).read_text())
         )
@@ -56,7 +58,9 @@ def main():
     assert project["version"] == plugin["version"] == __version__, "Release versions differ"
     assert project["requires-python"] == ">=3.11"
     assert "the missing agentic icloud connection" in (ROOT / "README.md").read_text()
-    print(f"Verified {count} local documentation links, 3 examples, and release metadata.")
+    print(
+        f"Verified {count} local documentation links, {len(examples)} examples, and release metadata."
+    )
 
 
 if __name__ == "__main__":

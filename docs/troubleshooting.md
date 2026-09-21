@@ -39,6 +39,10 @@ can include private data. Avoid enabling library debug logging on your real acco
 | Sender/date search returns unexpected or no messages | `query` is literal text in headers/body. Use `sender`, `subject`, `since`, and `before` fields for filters; see [search examples](usage.md#read-your-inbox). `FROM` or `SINCE` inside `query` are searched as words. An empty result from the wrong filters does not answer the intended search. |
 | `message_too_large` | Reads are capped at 20 MiB per message. Use your mail client for this message. |
 | `draft_changed` | Read and review the draft again before supplying its new hash. |
+| `calendar_create` rejects raw event fields | Prepare with `calendar draft` first. Create using its `draft_id`, reviewed `expected_sha256`, and `confirmed:true` only after the user confirms the proposal. |
+| `draft_not_found` | Use `calendar drafts` under the account that prepared the proposal. Drafts are local to this machine and scoped to the login account. |
+| `draft_locked` | Creation was already attempted. The local attempt record cannot be revised or discarded; inspect its `event_id` before taking further action. |
+| `calendar_create_unconfirmed` | The event may exist. Read the returned `event_id` with `calendar read`, or recover it with `calendar read-draft`. Do not repeat creation, remove the database, or prepare a replacement merely to bypass protection. A pre-request crash can leave an attempt without an event; report uncertainty and investigate before deciding a new action. |
 | `send_unconfirmed` / `already_attempted` | Delivery may have occurred. Check Sent, any refused recipients, and actual delivery. Do not clear the journal or create a new draft merely to bypass protection. |
 | SMTP accepted, housekeeping failed | The message may have been sent even if Sent-copy saving/draft cleanup failed. Do not resend based on those flags alone. |
 | `conflict` | The event ETag is stale or another client changed it during the write. Read the current event and reassess the edit. |

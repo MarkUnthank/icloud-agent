@@ -172,6 +172,9 @@ def result(out, payload, args):
             )
         if error.get("recovery"):
             out.print(Padding(Text(literal(error["recovery"])), (1, 2, 0, 2)))
+        identifiers = {key: error[key] for key in ("draft_id", "event_id") if error.get(key)}
+        if identifiers:
+            out.print(Padding(value_view(identifiers), (1, 2, 0, 2)))
         out.print()
         return
     data = payload["data"]

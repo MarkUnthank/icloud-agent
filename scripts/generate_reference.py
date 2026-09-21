@@ -91,6 +91,7 @@ def generate():
                     "minItems",
                     "maxItems",
                     "pattern",
+                    "const",
                 )
             }
             required = model_field.is_required()
