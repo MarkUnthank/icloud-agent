@@ -1,0 +1,16 @@
+CHANGELOG.md
+  h_c0a76d7af66c6d 9-10
+src/icloud_agent/resources/plugin/skills/icloud-agent/SKILL.md
+  h_c0a76d7af66c6d 67-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8d2dc995ad2324b5aa9de2cc12e75f7ca338349c",
+  "prompts": {},
+  "humans": {
+    "h_c0a76d7af66c6d": {
+      "author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
