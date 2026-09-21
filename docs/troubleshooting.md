@@ -23,6 +23,8 @@ can include private data. Avoid enabling library debug logging on your real acco
 | Python too old / missing venv | Install Python 3.11+ with venv support. On Windows use `py -3`. On Linux your distribution may provide `python3-venv`. |
 | `setup_required` | Run `icloud-agent auth login` to explicitly select access after upgrading an older account config. |
 | `calendar_disabled` / `sender_disabled` | Run `icloud-agent auth configure` in your terminal to review enabled resources. An empty selection enables none. |
+| `sender_name_required` | Run `auth configure` to accept or edit the name loaded from iCloud, or supply `from_name` for this draft. Reading mail does not require a sender name. |
+| `invalid_sender_name` | Use a name of 1–200 characters with no control characters or line breaks. Unicode and punctuation are supported. |
 | `config_changed` | Another login, logout, or configuration session changed account settings. Restart `auth configure`; the stale selection was not saved. |
 | `not_authenticated` | Run `icloud-agent auth login` in your own terminal. A config file alone is insufficient; the OS credential entry must exist. |
 | `interactive_login_required` | Login was launched from a pipe/agent session. Open a normal interactive terminal yourself. |

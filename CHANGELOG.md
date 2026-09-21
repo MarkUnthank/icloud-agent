@@ -6,6 +6,9 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Prefill an editable **Sender name** from the iCloud CalDAV account during login and
+  configuration. Include the saved name in draft From headers; allow a `from_name`
+  override for individual drafts. Expose the saved name through `mail_senders` and auth status.
 - Use app-specific-password setup only. Remove the experimental Apple Account
   password/2FA commands and web-session dependency. Keep address discovery through CalDAV.
 - Add `sender`, `subject`, `since`, and `before` filters to mail search. Define `query`

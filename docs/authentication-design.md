@@ -29,6 +29,18 @@ saved addresses before showing the sender picker. New addresses stay unchecked.
 Users choose a default sender independently of the login email. The picker
 also offers **Add another address…** for an existing Mail address missing from discovery.
 
+Setup also requests the CalDAV principal's `DAV:displayname` and uses a valid result
+to prefill **Sender name**. The user can accept or edit it; later configuration prefers
+their saved choice. Missing names require input. This is the account's display name,
+not a per-alias Mail preference. Discovery does not infer names from the login address
+or scan Sent messages. See [WebDAV principal properties](https://www.rfc-editor.org/rfc/rfc3744.html#section-4).
+
+Draft creation formats the From header with the saved name and enabled sender address.
+The optional `from_name` overrides the name for that draft. Standard email header encoding
+handles punctuation and Unicode; control characters are rejected. The SMTP envelope
+still uses only the email address. Names are included before draft review and hashing;
+sending never rewrites a reviewed draft's From header.
+
 These are account calendar identities, not a guaranteed complete Mail alias inventory
 or proof of SMTP permission. A live app-password check on September 21, 2026 returned
 ten email identities, including iCloud, legacy me.com, and custom-domain addresses.

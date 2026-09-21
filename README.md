@@ -49,7 +49,8 @@ in the hidden terminal prompt. It is saved in your OS credential store for futur
 invocations. **Enter it in your terminal, never in chat.**
 
 Addresses and calendars load from iCloud automatically. Choose enabled senders and
-calendars with **Space** and **Enter**, then pick your default sender. Change your
+calendars with **Space** and **Enter**, then pick your default sender. Setup prefills
+**Sender name** from iCloud when available; press Enter to keep it or type another name. Change your
 choices later with `icloud-agent auth configure`.
 
 At the end, choose **Install agent skills** or **Finish**. Skills are installed globally

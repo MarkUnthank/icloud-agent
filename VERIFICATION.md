@@ -8,7 +8,8 @@ Tests use synthetic data and protocol doubles for Apple services. A real subproc
 exercises the stdio MCP handshake, tool discovery, and unauthenticated error path.
 The suite requires no Apple Account and performs no live mailbox/calendar writes.
 
-The current development suite passes **146 tests locally on macOS / Python 3.14**.
+The last completed suite, before the sender-name change, passed **146 tests locally on macOS / Python 3.14**.
+Sender-name regression cases have been added; running them is deferred until merge preparation.
 The app-password success card, agent picker, and skill-installation result were also
 checked in Ghostty using the isolated setup preview with synthetic data.
 
@@ -39,6 +40,9 @@ On Apple Silicon macOS / Python 3.14, discovery using the saved app-specific pas
 returned ten email identities and four calendars. The identities included the configured
 senders and chosen default. This covers one account; CalDAV identities are not a
 guaranteed complete alias inventory or proof of sending permission for each address.
+An additional read using the same app-specific password returned the principal's
+human-readable `DAV:displayname`. This verifies an account-name suggestion, not per-alias
+Mail display-name preferences.
 
 The user supplied an agent's report of successful message reading, draft creation,
 draft read/hash verification, SMTP submission, Sent-folder readback, and draft removal.

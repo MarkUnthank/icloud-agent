@@ -113,6 +113,8 @@ icloud-agent auth login
 6. Choose enabled senders, then choose the default sender address. Your default can be
    an alias different from your login email.
    If an address is missing, select **Add another address…** in the sender picker.
+   **Sender name** is prefilled from your iCloud account when available: Enter accepts
+   it, or type a different name. If iCloud supplies no name, enter one.
 7. Choose enabled calendars: **arrow keys** move, **Space** toggles, and
    **Enter** saves. Calendars start unchecked; choose those you want the agent to access.
    An empty selection enables none. Ctrl-C cancels without saving changes.
@@ -150,9 +152,11 @@ Apple. One active account is supported. Running login for a different account re
 the active config and removes the previous account's saved credential from this tool.
 
 `auth configure` reuses the stored password, reloads addresses and calendars, and restores
-your choices. Newly discovered addresses and calendars remain unchecked. Sender choices control draft
+your choices, including your edited sender name. Run it once if an existing setup has no
+sender name saved. Newly discovered addresses and calendars remain unchecked. Sender choices control draft
 creation and sending, including previously saved drafts; they do not filter the shared
-inbox. `mail senders` lists enabled From addresses for users and agents.
+inbox. `mail senders` lists enabled From addresses and the saved sender name for users and agents.
+That name applies to every enabled address; `mail_draft.from_name` can override it for a draft.
 
 Local logout does not revoke the password at Apple. Revoke it at
 [account.apple.com](https://account.apple.com/) to invalidate it remotely. Never paste

@@ -28,7 +28,8 @@ credential: this is not isolation from an already-compromised local user account
 The password is revocable at Apple. It is not a fine-grained read-only token or a set
 of per-tool permission scopes. It supports both mail and calendar access for this tool.
 The account config contains the Apple Account and iCloud Mail addresses, discovered
-and manually added sender addresses, enabled and default senders, and enabled calendar IDs. It contains no
+and manually added sender addresses, enabled and default senders, the sender display name,
+and enabled calendar IDs. It contains no
 password. Local selection policy limits what this connector exposes; it does not
 reduce the underlying app-specific password's permissions at Apple.
 

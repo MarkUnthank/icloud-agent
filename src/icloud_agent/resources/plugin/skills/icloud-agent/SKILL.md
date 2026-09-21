@@ -22,8 +22,12 @@ Write JSON with a file writer or quoted heredoc; do not interpolate user content
 MCP tools accept an `arguments` object matching the schema. Results contain `ok` and
 either `data` or `error`; `ok:false` means failure even when MCP transport succeeds.
 
-Use `mail_senders` (`icloud-agent mail senders --json`) for enabled From addresses
-and the default sender. Set `mail_draft.from_address` to override that default.
+Use `mail_senders` (`icloud-agent mail senders --json`) for enabled From addresses,
+the default address, and `sender_name`. Drafts use the saved sender name. Set
+`mail_draft.from_address` to choose another enabled address; `from_name` overrides the
+name for one draft when requested. On `sender_name_required`, have the user confirm
+the prefilled name in `auth configure` or supply a name for this draft. Do not invent
+a display name from the email address. A name change does not rewrite existing drafts.
 On `sender_disabled` or `calendar_disabled`, direct the user to `icloud-agent auth configure`;
 do not bypass their selections. Sender restrictions do not filter the shared inbox.
 

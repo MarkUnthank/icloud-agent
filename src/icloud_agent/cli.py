@@ -72,6 +72,7 @@ def login(no_browser=False):
         "calendar_account": apple_account,
         "sender_addresses": account.sender_addresses,
         "default_sender_address": account.default_sender_address,
+        "sender_name": account.sender_name,
         "calendar_ids": account.calendar_ids,
         "credential_storage": "OS credential store",
         "verified": ["IMAP", "CalDAV"],
@@ -128,6 +129,16 @@ def select_access(out, account, available, *, first_login=False):
             [(address, address) for address in account.sender_addresses],
             current_default,
         )
+        out.print()
+        while True:
+            name = terminal.ask(
+                out, "Sender name", default=account.sender_name or available.get("display_name")
+            )
+            try:
+                account.sender_name = auth.validate_sender_name(name)
+                break
+            except AgentError as exc:
+                out.print("  " + str(exc), style="failure")
     else:
         account.default_sender_address = None
     out.print()
@@ -181,6 +192,7 @@ def configure():
         "saved": True,
         "sender_addresses": account.sender_addresses,
         "default_sender_address": account.default_sender_address,
+        "sender_name": account.sender_name,
         "calendar_ids": account.calendar_ids,
     }
 
@@ -235,7 +247,7 @@ def parser():
     auth_commands.add_parser("status", help="Check saved credentials or live access.").add_argument(
         "--check", action="store_true"
     )
-    auth_commands.add_parser("configure", help="Choose enabled senders and calendars.")
+    auth_commands.add_parser("configure", help="Choose your sender name, addresses, and calendars.")
     auth_commands.add_parser("logout", help="Remove the app-password connection.")
     setup_parser = commands.add_parser("setup", help="Install bundled agent integration.")
     setup_parser.add_argument(
@@ -343,6 +355,7 @@ def main():
                     "services_checked": args.check,
                     "sender_addresses": account.sender_addresses,
                     "default_sender_address": account.default_sender_address,
+                    "sender_name": account.sender_name,
                     "calendar_ids": account.calendar_ids,
                 }
             result = {"ok": True, "data": data}

@@ -7,6 +7,7 @@ import ssl
 from contextlib import contextmanager
 from datetime import date
 from email import policy
+from email.headerregistry import Address
 from email.message import EmailMessage
 from email.parser import BytesParser
 from email.utils import formatdate, getaddresses, make_msgid
@@ -14,7 +15,7 @@ from email.utils import formatdate, getaddresses, make_msgid
 from imapclient import IMAPClient
 from imapclient.exceptions import LoginError
 
-from .auth import Account
+from .auth import Account, validate_sender_name
 from .errors import AgentError
 
 MAX_MESSAGE = 20 * 1024 * 1024
@@ -269,12 +270,15 @@ def draft(
     cc: list[str] | None = None,
     reply_to_id: str | None = None,
     from_address: str | None = None,
+    from_name: str | None = None,
 ):
     recipients(to + (cc or []))
     if not to:
         raise AgentError("invalid_address", "At least one To recipient is required.")
     msg = EmailMessage(policy=policy.SMTP)
-    msg["From"] = enabled_sender(account, from_address)
+    sender = enabled_sender(account, from_address)
+    name = validate_sender_name(from_name if from_name is not None else account.sender_name)
+    msg["From"] = Address(display_name=name, addr_spec=sender)
     msg["To"] = ", ".join(to)
     if cc:
         msg["Cc"] = ", ".join(cc)

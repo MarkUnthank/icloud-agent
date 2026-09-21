@@ -163,7 +163,7 @@ def mock_login(monkeypatch):
         cli.webbrowser, "open", lambda url: pytest.fail("Unexpected browser launch")
     )
     monkeypatch.setattr(sys, "stdin", TerminalStream())
-    entries = iter(["invalid", "person@icloud.com"])
+    entries = iter(["invalid", "person@icloud.com", ""])
     monkeypatch.setattr("builtins.input", lambda: next(entries))
     passwords = iter(["ordinary-password", "abcd-efgh-ijkl-mnop"])
 
@@ -173,7 +173,11 @@ def mock_login(monkeypatch):
 
     monkeypatch.setattr(terminal, "password_input", password_input)
     monkeypatch.setattr(auth, "operation_lock", nullcontext)
-    monkeypatch.setattr(cli, "check_account", lambda account: {"addresses": [], "calendars": []})
+    monkeypatch.setattr(
+        cli,
+        "check_account",
+        lambda account: {"addresses": [], "display_name": "Alex Example", "calendars": []},
+    )
     monkeypatch.setattr(terminal, "choose", lambda out, title, choices, selected: selected)
     monkeypatch.setattr(terminal, "pick_one", lambda out, title, choices, selected: selected)
     saved = []
@@ -196,12 +200,14 @@ def test_login_keeps_prompts_on_stderr_and_secret_out_of_output(monkeypatch):
     assert "ordinary-password" not in stdout + stderr
     assert len(saved) == 1 and saved[0].password == "abcd-efgh-ijkl-mnop"
     assert saved[0].apple_account == saved[0].mail_address == "person@icloud.com"
+    assert "Sender name [Alex Example]" in stderr
+    assert saved[0].sender_name == "Alex Example"
 
 
 def test_login_waits_for_enter_before_opening_displayed_url(monkeypatch):
-    mock_login(monkeypatch)
+    saved = mock_login(monkeypatch)
     events = []
-    entries = iter(["person@icloud.com", ""])
+    entries = iter(["person@icloud.com", "", "Alex at Work"])
 
     def enter():
         events.append("input")
@@ -216,7 +222,8 @@ def test_login_waits_for_enter_before_opening_displayed_url(monkeypatch):
     monkeypatch.setattr(cli.webbrowser, "open", open_browser)
     code, stdout, stderr = run_cli(monkeypatch, ["auth", "login"])
     assert code == 0 and json.loads(stdout)["ok"]
-    assert events == ["input", "input", "https://account.apple.com/sign-in"]
+    assert events == ["input", "input", "https://account.apple.com/sign-in", "input"]
+    assert saved[0].sender_name == "Alex at Work"
     assert (
         stderr.index("https://account.apple.com/sign-in")
         < stderr.index("[Press enter to open in browser]")

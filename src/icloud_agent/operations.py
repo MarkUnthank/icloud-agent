@@ -73,6 +73,22 @@ class MailDraft(Arguments):
     cc: list[str] = Field(default_factory=list, max_length=50)
     reply_to_id: str | None = None
     from_address: str | None = None
+    from_name: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=200,
+        description="Display name in the From header. Omit to use the saved sender name; override for this draft when requested.",
+    )
+
+    @field_validator("from_name")
+    @classmethod
+    def valid_from_name(cls, value):
+        if value is None:
+            return None
+        try:
+            return auth.validate_sender_name(value)
+        except AgentError as exc:
+            raise ValueError(str(exc)) from None
 
 
 class MailSend(MailRead):
@@ -142,8 +158,9 @@ OPERATIONS = {
         lambda account: {
             "addresses": account.sender_addresses,
             "default": account.default_sender_address,
+            "sender_name": account.sender_name,
         },
-        "List locally enabled sender addresses. Aliases are user-configured; Apple validates sending permission during SMTP submission.",
+        "List locally enabled sender addresses, the default address, and the saved sender name. Apple validates sending permission during SMTP submission.",
     ),
     "mail_folders": Operation(
         Empty, mail.folders, "List iCloud mail folders and special-use flags."
@@ -167,6 +184,7 @@ OPERATIONS = {
         mail.draft,
         "Save a plain-text iCloud draft. Does not send. "
         "Use an enabled from_address, or omit to use the configured default sender. "
+        "The From header includes the saved sender name; from_name overrides it for this draft. "
         "For replies, supply original message ID and explicit recipients.",
         True,
     ),

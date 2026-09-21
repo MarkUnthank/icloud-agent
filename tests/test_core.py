@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from datetime import UTC, datetime
 from email import policy
 from email.message import EmailMessage
+from email.parser import BytesParser
 from types import SimpleNamespace
 
 import pytest
@@ -18,6 +19,7 @@ EVENT_URL = CALENDAR + "event.ics"
 ACCOUNT.sender_addresses = [ACCOUNT.mail_address]
 ACCOUNT.calendar_ids = [CALENDAR]
 ACCOUNT.default_sender_address = ACCOUNT.mail_address
+ACCOUNT.sender_name = "Alex Example"
 
 
 @contextmanager
@@ -52,6 +54,7 @@ def test_credentials_persist_outside_config_and_logout(monkeypatch, tmp_path):
     assert auth.load().sender_addresses == ACCOUNT.sender_addresses
     assert auth.load().calendar_ids == ACCOUNT.calendar_ids
     assert auth.load().default_sender_address == ACCOUNT.default_sender_address
+    assert auth.load().sender_name == ACCOUNT.sender_name
     auth.logout()
     assert not config.exists()
     assert not keychain.values
@@ -300,6 +303,51 @@ def test_create_and_send_with_unflagged_drafts_and_flagged_sent(
     assert result["smtp_accepted"] and result["draft_removed"]
     assert not result["delivery_confirmed"]
     assert mailbox.appended[1][0][0] == "Sent Messages"
+
+
+@pytest.mark.parametrize("from_name", [None, 'Café, "Support"'])
+def test_draft_name_roundtrips_and_smtp_preserves_reviewed_from(
+    draft_transport, tmp_path, monkeypatch, from_name
+):
+    mailbox, ref, _ = draft_transport
+    mail.draft(ACCOUNT, ["recipient@example.com"], "Hello", "Body", from_name=from_name)
+    mailbox.raw = mailbox.appended[0][0][1]
+    parsed = BytesParser(policy=policy.default).parsebytes(mailbox.raw)
+    sender = parsed["From"].addresses[0]
+    assert sender.display_name == (from_name or ACCOUNT.sender_name)
+    assert sender.addr_spec == ACCOUNT.mail_address
+    reviewed = mail.read(ACCOUNT, ref)
+    sent = []
+
+    def capture(self, message, *, from_addr, to_addrs):
+        sent.append((message["From"].addresses[0], from_addr))
+        return {}
+
+    monkeypatch.setattr(SMTP, "send_message", capture)
+    result = mail.send_draft(ACCOUNT, ref, reviewed["sha256"], tmp_path)
+    assert result["smtp_accepted"]
+    assert sent[0][0].display_name == sender.display_name
+    assert sent[0][1] == ACCOUNT.mail_address
+
+
+@pytest.mark.parametrize("name", ["", " ", "Alex\r\nBcc: other@example.com", "a\x00b", "x" * 201])
+def test_invalid_from_names_fail_schema_validation_before_auth(monkeypatch, name):
+    monkeypatch.setattr(auth, "load", lambda: pytest.fail("Unexpected credential access"))
+    result = operations.invoke(
+        "mail_draft",
+        {"to": ["person@example.com"], "subject": "Hi", "body": "Hi", "from_name": name},
+    )
+    assert result["error"]["code"] == "invalid_arguments"
+
+
+def test_missing_sender_name_requires_selection_before_drafting(monkeypatch):
+    account = auth.Account("person@icloud.com", "person@icloud.com", "synthetic")
+    account.sender_addresses = [account.mail_address]
+    account.default_sender_address = account.mail_address
+    monkeypatch.setattr(mail, "connection", lambda a: pytest.fail("Unexpected network access"))
+    with pytest.raises(AgentError) as error:
+        mail.draft(account, ["person@example.com"], "Hi", "Hi")
+    assert error.value.code == "sender_name_required"
 
 
 def test_smtp_timeout_remains_an_uncertain_send(draft_transport, tmp_path, monkeypatch):

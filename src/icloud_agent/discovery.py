@@ -2,9 +2,9 @@
 
 from urllib.parse import unquote, urlsplit
 
-from caldav.elements import cdav
+from caldav.elements import cdav, dav
 
-from . import calendar, mail
+from . import auth, calendar, mail
 from .errors import AgentError
 
 
@@ -33,9 +33,14 @@ def email_identities(values):
 def account_resources(account):
     with calendar.connection(account) as client:
         principal = client.principal()
-        properties = principal.get_properties([cdav.CalendarUserAddressSet()])
+        properties = principal.get_properties([cdav.CalendarUserAddressSet(), dav.DisplayName()])
+        try:
+            display_name = auth.validate_sender_name(properties.get(dav.DisplayName.tag))
+        except AgentError:
+            display_name = None
         resources = {
             "addresses": email_identities(properties.get(cdav.CalendarUserAddressSet.tag)),
+            "display_name": display_name,
             "calendars": [
                 {"id": calendar.trusted_url(str(item.url)), "name": item.name}
                 for item in principal.calendars()

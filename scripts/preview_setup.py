@@ -85,6 +85,7 @@ def main():
         calendar_ids=[CALENDARS[0]["id"], CALENDARS[3]["id"]],
         known_sender_addresses=ADDRESSES,
         default_sender_address=ADDRESSES[6],
+        sender_name="Alex Example",
     )
 
     with (
@@ -103,7 +104,11 @@ def main():
                 )
             if mode == "configure-conflict":
                 config.write_text("changed by another setup")
-            return {"addresses": ADDRESSES, "calendars": [] if mode == "app-empty" else CALENDARS}
+            return {
+                "addresses": ADDRESSES,
+                "display_name": "Alex Example",
+                "calendars": [] if mode == "app-empty" else CALENDARS,
+            }
 
         def setup(**kwargs):
             if mode == "setup-conflict":

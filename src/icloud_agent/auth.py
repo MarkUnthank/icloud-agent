@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import tempfile
+import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -50,9 +51,30 @@ class Account:
     calendar_ids: list[str] = field(default_factory=list)
     known_sender_addresses: list[str] = field(default_factory=list)
     default_sender_address: str | None = None
+    sender_name: str | None = None
+
+
+def validate_sender_name(value):
+    if value is None:
+        raise AgentError(
+            "sender_name_required",
+            "Set your sender name with icloud-agent auth configure, or provide from_name for this draft.",
+        )
+    if (
+        not isinstance(value, str)
+        or not 1 <= len(value.strip()) <= 200
+        or any(unicodedata.category(char) in {"Cc", "Cs"} for char in value)
+    ):
+        raise AgentError(
+            "invalid_sender_name",
+            "Use a sender name of 1–200 characters without control characters.",
+        )
+    return value.strip()
 
 
 def save(account: Account):
+    if account.sender_name is not None:
+        account.sender_name = validate_sender_name(account.sender_name)
     path = config_path()
     old_account = json.loads(path.read_text())["apple_account"] if path.exists() else None
     private_dir(path.parent)
@@ -68,6 +90,7 @@ def save(account: Account):
                     "mail_address": account.mail_address,
                     "sender_addresses": account.sender_addresses,
                     "default_sender_address": account.default_sender_address,
+                    "sender_name": account.sender_name,
                     "calendar_ids": account.calendar_ids,
                     "known_sender_addresses": account.known_sender_addresses,
                 },
@@ -120,6 +143,7 @@ def load() -> Account:
         data["calendar_ids"],
         data["known_sender_addresses"],
         default_sender,
+        data.get("sender_name"),
     )
 
 

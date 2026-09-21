@@ -88,6 +88,14 @@ Run `icloud-agent mail senders` to list enabled sender addresses and the default
 are enabled, drafting and sending are disabled. Apple validates whether your account
 can send from a configured alias during SMTP submission.
 
+Drafts include the saved sender name, for example `Alex Example <alex@icloud.com>`.
+Setup prefills that name from iCloud and lets you edit it. Change it with
+`icloud-agent auth configure`; an existing setup without a saved name needs this once.
+For an individual draft, `from_name` overrides the name without changing the email
+address or saved setting. `mail senders` returns the saved name as `sender_name`.
+Names are set before review and hashing. Sending preserves the reviewed draft's From
+header, so a later settings change does not rename an already-saved draft.
+
 Draft creation saves to iCloud Drafts and returns a draft `id` when Apple provides an
 APPENDUID response. If it returns only `folder` and `message_id`, the draft was saved:
 search that folder for its Message-ID to obtain the ID rather than creating it again.

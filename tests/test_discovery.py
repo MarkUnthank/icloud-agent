@@ -2,7 +2,8 @@ import io
 from contextlib import nullcontext
 from types import SimpleNamespace
 
-from caldav.elements import cdav
+import pytest
+from caldav.elements import cdav, dav
 from rich.console import Console
 
 from icloud_agent import auth, calendar, cli, discovery, terminal
@@ -36,12 +37,18 @@ def test_identities_accept_aliases_and_custom_domains_but_not_other_uris_or_head
     assert discovery.email_identities(None) == []
 
 
-def test_discovery_reads_only_principal_identities_and_calendar_inventory(monkeypatch):
+@pytest.mark.parametrize(
+    "name,expected_name", [("Alex Example", "Alex Example"), (None, None), ("Bad\r\nName", None)]
+)
+def test_discovery_reads_principal_name_identities_and_calendars(monkeypatch, name, expected_name):
     requested = []
 
     def properties(props):
         requested.extend(prop.tag for prop in props)
-        return {cdav.CalendarUserAddressSet.tag: ["mailto:alias@icloud.com"]}
+        return {
+            cdav.CalendarUserAddressSet.tag: ["mailto:alias@icloud.com"],
+            dav.DisplayName.tag: name,
+        }
 
     principal = SimpleNamespace(
         get_properties=properties,
@@ -54,9 +61,10 @@ def test_discovery_reads_only_principal_identities_and_calendar_inventory(monkey
     )
     assert discovery.account_resources(SimpleNamespace(apple_account="person@icloud.com")) == {
         "addresses": ["alias@icloud.com"],
+        "display_name": expected_name,
         "calendars": [{"id": "https://caldav.icloud.com/123/home/", "name": "Home"}],
     }
-    assert requested == [cdav.CalendarUserAddressSet.tag]
+    assert requested == [cdav.CalendarUserAddressSet.tag, dav.DisplayName.tag]
 
 
 def test_discovered_senders_go_straight_to_picker_and_preserve_default(monkeypatch):
@@ -77,6 +85,7 @@ def test_discovered_senders_go_straight_to_picker_and_preserve_default(monkeypat
 
     monkeypatch.setattr(terminal, "choose", choose)
     monkeypatch.setattr(terminal, "pick_one", lambda out, label, choices, selected: selected)
+    monkeypatch.setattr(terminal, "ask", lambda *args, **kwargs: "Alex Example")
     output = io.StringIO()
     cli.select_access(
         Console(file=output, theme=terminal.THEME),
@@ -119,3 +128,39 @@ def test_manual_supplement_is_optional_and_must_be_selected(monkeypatch):
     assert account.sender_addresses == []
     assert account.default_sender_address is None
     assert "add_address" not in account.known_sender_addresses
+
+
+@pytest.mark.parametrize(
+    "saved,discovered,typed,expected",
+    [
+        (None, "Alex Example", None, "Alex Example"),
+        (None, "Alex Example", "Alex at Work", "Alex at Work"),
+        ("Alex at Work", "Alex Example", None, "Alex at Work"),
+        (None, None, "Alex Example", "Alex Example"),
+    ],
+)
+def test_sender_name_prefill_accepts_edits_and_preserves_saved_choice(
+    monkeypatch, saved, discovered, typed, expected
+):
+    account = auth.Account(
+        "person@icloud.com",
+        "person@icloud.com",
+        "synthetic",
+        sender_addresses=["person@icloud.com"],
+        sender_name=saved,
+    )
+    monkeypatch.setattr(terminal, "choose", lambda out, label, choices, selected: selected)
+    monkeypatch.setattr(terminal, "pick_one", lambda out, label, choices, selected: selected)
+
+    def ask(out, label, default=None):
+        assert label == "Sender name"
+        assert default == (saved or discovered)
+        return typed if typed is not None else default
+
+    monkeypatch.setattr(terminal, "ask", ask)
+    cli.select_access(
+        Console(file=io.StringIO(), theme=terminal.THEME),
+        account,
+        {"addresses": [], "display_name": discovered, "calendars": []},
+    )
+    assert account.sender_name == expected

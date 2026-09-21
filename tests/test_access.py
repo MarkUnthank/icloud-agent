@@ -21,6 +21,7 @@ def account():
         [CALENDAR],
         ["mail@icloud.com", "alias@icloud.com"],
         "alias@icloud.com",
+        "Alex Example",
     )
 
 
@@ -87,7 +88,11 @@ def test_enabled_sender_is_discoverable_to_agents(monkeypatch):
     monkeypatch.setattr(auth, "load", account)
     monkeypatch.setattr(auth, "operation_lock", nullcontext)
     result = operations.invoke("mail_senders", {})
-    assert result["data"] == {"addresses": ["alias@icloud.com"], "default": "alias@icloud.com"}
+    assert result["data"] == {
+        "addresses": ["alias@icloud.com"],
+        "default": "alias@icloud.com",
+        "sender_name": "Alex Example",
+    }
 
 
 def test_old_config_requires_explicit_access_selection(monkeypatch, tmp_path):

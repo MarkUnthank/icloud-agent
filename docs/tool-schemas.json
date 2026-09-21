@@ -1,6 +1,6 @@
 {
   "mail_senders": {
-    "description": "List locally enabled sender addresses. Aliases are user-configured; Apple validates sending permission during SMTP submission.",
+    "description": "List locally enabled sender addresses, the default address, and the saved sender name. Apple validates sending permission during SMTP submission.",
     "write": false,
     "destructive": false,
     "input_schema": {
@@ -145,7 +145,7 @@
     }
   },
   "mail_draft": {
-    "description": "Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the configured default sender. For replies, supply original message ID and explicit recipients.",
+    "description": "Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the configured default sender. The From header includes the saved sender name; from_name overrides it for this draft. For replies, supply original message ID and explicit recipients.",
     "write": true,
     "destructive": false,
     "input_schema": {
@@ -201,6 +201,21 @@
           ],
           "default": null,
           "title": "From Address"
+        },
+        "from_name": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Display name in the From header. Omit to use the saved sender name; override for this draft when requested.",
+          "title": "From Name"
         }
       },
       "required": [

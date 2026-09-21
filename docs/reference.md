@@ -20,7 +20,7 @@ JSON Schema. [All generated schemas](tool-schemas.json) are also checked into th
 | `setup [--codex] [--skills] [--agent NAME] [--copy]` | Export bundled plugin; register Codex MCP or install the shared skill and optional agent links. `--agent` is repeatable and requires `--skills`. |
 | `auth login [--no-browser]` | Interactive local setup; IMAP/CalDAV checked before saving. |
 | `auth status [--check]` | Local credential presence; optionally live IMAP/CalDAV checks. |
-| `auth configure` | Reload addresses/calendars and choose enabled resources. |
+| `auth configure` | Reload addresses/calendars, choose enabled resources, and edit the sender name. |
 | `auth logout` | Remove active local credential and account config. |
 | `schema [OPERATION]` | Describe operation inputs without authentication. |
 | `mcp` | Start a local stdio MCP process. |
@@ -47,7 +47,7 @@ JSON Schema. [All generated schemas](tool-schemas.json) are also checked into th
 
 ## mail_senders
 
-List locally enabled sender addresses. Aliases are user-configured; Apple validates sending permission during SMTP submission.
+List locally enabled sender addresses, the default address, and the saved sender name. Apple validates sending permission during SMTP submission.
 
 Input: `{}`.
 
@@ -83,7 +83,7 @@ Read a message or draft without marking it read. Returns content hash required f
 
 ## mail_draft
 
-Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the configured default sender. For replies, supply original message ID and explicit recipients.
+Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the configured default sender. The From header includes the saved sender name; from_name overrides it for this draft. For replies, supply original message ID and explicit recipients.
 
 | Field | Type | Required | Default | Meaning and constraints |
 |---|---|---|---|---|
@@ -93,6 +93,7 @@ Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or o
 | `cc` | array of string | No | `[]` | maxItems: `50` |
 | `reply_to_id` | string or null | No | `null` | — |
 | `from_address` | string or null | No | `null` | — |
+| `from_name` | string or null | No | `null` | Display name in the From header. Omit to use the saved sender name; override for this draft when requested. |
 
 ## mail_send_draft
 

@@ -42,7 +42,7 @@ def generate():
         "| `setup [--codex] [--skills] [--agent NAME] [--copy]` | Export bundled plugin; register Codex MCP or install the shared skill and optional agent links. `--agent` is repeatable and requires `--skills`. |",
         "| `auth login [--no-browser]` | Interactive local setup; IMAP/CalDAV checked before saving. |",
         "| `auth status [--check]` | Local credential presence; optionally live IMAP/CalDAV checks. |",
-        "| `auth configure` | Reload addresses/calendars and choose enabled resources. |",
+        "| `auth configure` | Reload addresses/calendars, choose enabled resources, and edit the sender name. |",
         "| `auth logout` | Remove active local credential and account config. |",
         "| `schema [OPERATION]` | Describe operation inputs without authentication. |",
         "| `mcp` | Start a local stdio MCP process. |",
