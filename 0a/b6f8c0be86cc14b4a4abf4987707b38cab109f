@@ -1,0 +1,23 @@
+.github/workflows/test.yml
+  s_6fe6e02598edf3::t_4b700cb31b7fa9 55
+VERIFICATION.md
+  s_6fe6e02598edf3::t_f8175b76dfe677 11-13,44-46
+docs/releasing.md
+  s_6fe6e02598edf3::t_110294f1156344 25-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0ab6f8c0be86cc14b4a4abf4987707b38cab109f",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
