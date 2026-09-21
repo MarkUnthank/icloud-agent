@@ -178,3 +178,30 @@ def choose(out, title, choices, selected):
         output=create_output(stdout=out.file),
         color_depth=ColorDepth.DEPTH_1_BIT if "NO_COLOR" in os.environ else None,
     ).unsafe_ask()
+
+
+def pick_one(out, title, choices, selected):
+    """Choose one value while keeping all prompt output away from JSON stdout."""
+    import questionary
+    from prompt_toolkit.output import ColorDepth
+    from prompt_toolkit.output.defaults import create_output
+
+    return questionary.select(
+        title,
+        choices=[questionary.Choice(literal(name), value=value) for name, value in choices],
+        default=selected,
+        instruction="(↑↓ move · Enter select)",
+        style=questionary.Style(
+            [
+                ("qmark", "fg:ansicyan"),
+                ("question", "bold"),
+                ("answer", "fg:ansicyan bold"),
+                ("pointer", "fg:ansicyan bold"),
+                ("highlighted", "fg:ansicyan"),
+            ]
+        )
+        if "NO_COLOR" not in os.environ
+        else questionary.Style([]),
+        output=create_output(stdout=out.file),
+        color_depth=ColorDepth.DEPTH_1_BIT if "NO_COLOR" in os.environ else None,
+    ).unsafe_ask()

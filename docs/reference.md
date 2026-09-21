@@ -78,7 +78,7 @@ Read a message or draft without marking it read. Returns content hash required f
 
 ## mail_draft
 
-Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the first enabled sender. For replies, supply original message ID and explicit recipients.
+Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the configured default sender. For replies, supply original message ID and explicit recipients.
 
 | Field | Type | Required | Default | Constraints |
 |---|---|---|---|---|

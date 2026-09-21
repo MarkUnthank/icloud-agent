@@ -42,8 +42,8 @@ def login(no_browser=False):
             except AgentError:
                 out.print("  Enter a valid email address.", style="failure")
 
-    apple_account = email("Apple Account")
-    mail_address = email("iCloud Mail", apple_account)
+    apple_account = email("iCloud Login Email Address")
+    mail_address = email("Primary iCloud Mail Address", apple_account)
     out.print()
     terminal.section(out, "2", "App-specific password")
     out.print("  account.apple.com", style="accent")
@@ -70,6 +70,7 @@ def login(no_browser=False):
         "mail_address": mail_address,
         "calendar_account": apple_account,
         "sender_addresses": account.sender_addresses,
+        "default_sender_address": account.default_sender_address,
         "calendar_ids": account.calendar_ids,
         "credential_storage": "OS credential store",
         "verified": ["IMAP", "CalDAV"],
@@ -101,6 +102,18 @@ def select_access(out, account, available, *, first_login=False):
         out, "Enabled senders", [(x, x) for x in known], selected
     )
     account.known_sender_addresses = known
+    if account.sender_addresses:
+        current_default = account.default_sender_address
+        if current_default not in account.sender_addresses:
+            current_default = account.sender_addresses[0]
+        account.default_sender_address = terminal.pick_one(
+            out,
+            "Default Sender Address",
+            [(address, address) for address in account.sender_addresses],
+            current_default,
+        )
+    else:
+        account.default_sender_address = None
     out.print("  Sender selection does not restrict reading the shared inbox.", style="muted")
     out.print()
     terminal.section(out, "4" if first_login else "2", "Calendars")
@@ -150,6 +163,7 @@ def configure():
     return {
         "saved": True,
         "sender_addresses": account.sender_addresses,
+        "default_sender_address": account.default_sender_address,
         "calendar_ids": account.calendar_ids,
     }
 
@@ -283,6 +297,7 @@ def main():
                     "mail_address": account.mail_address,
                     "services_checked": args.check,
                     "sender_addresses": account.sender_addresses,
+                    "default_sender_address": account.default_sender_address,
                     "calendar_ids": account.calendar_ids,
                 }
             result = {"ok": True, "data": data}

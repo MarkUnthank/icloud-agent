@@ -88,7 +88,7 @@
     }
   },
   "mail_draft": {
-    "description": "Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the first enabled sender. For replies, supply original message ID and explicit recipients.",
+    "description": "Save a plain-text iCloud draft. Does not send. Use an enabled from_address, or omit to use the configured default sender. For replies, supply original message ID and explicit recipients.",
     "write": true,
     "destructive": false,
     "input_schema": {

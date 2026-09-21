@@ -20,6 +20,7 @@ def account():
         ["alias@icloud.com"],
         [CALENDAR],
         ["mail@icloud.com", "alias@icloud.com"],
+        "alias@icloud.com",
     )
 
 
@@ -114,6 +115,20 @@ def test_picker_control_c_cancels():
         pipe.send_text("\x03")
         with pytest.raises(KeyboardInterrupt):
             terminal.choose(out, "Enabled", [("One", "1")], [])
+
+
+def test_default_sender_picker_handles_arrows_and_enter(monkeypatch):
+    monkeypatch.setenv("NO_COLOR", "1")
+    out = SimpleNamespace(file=io.StringIO())
+    with create_pipe_input() as pipe, create_app_session(input=pipe):
+        pipe.send_text("\x1b[B\r")
+        result = terminal.pick_one(
+            out,
+            "Default Sender Address",
+            [("Primary", "primary@icloud.com"), ("Alias", "alias@icloud.com")],
+            "primary@icloud.com",
+        )
+    assert result == "alias@icloud.com"
 
 
 def test_configure_cancel_preserves_saved_settings(monkeypatch, tmp_path):

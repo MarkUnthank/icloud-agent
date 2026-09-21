@@ -17,6 +17,7 @@ CALENDAR = "https://p01-caldav.icloud.com/123/home/"
 EVENT_URL = CALENDAR + "event.ics"
 ACCOUNT.sender_addresses = [ACCOUNT.mail_address]
 ACCOUNT.calendar_ids = [CALENDAR]
+ACCOUNT.default_sender_address = ACCOUNT.mail_address
 
 
 @contextmanager
@@ -50,6 +51,7 @@ def test_credentials_persist_outside_config_and_logout(monkeypatch, tmp_path):
     assert auth.load().password == "test-secret"
     assert auth.load().sender_addresses == ACCOUNT.sender_addresses
     assert auth.load().calendar_ids == ACCOUNT.calendar_ids
+    assert auth.load().default_sender_address == ACCOUNT.default_sender_address
     auth.logout()
     assert not config.exists()
     assert not keychain.values
@@ -409,6 +411,7 @@ def test_send_alias_uses_alias_envelope_and_primary_login(draft_transport, tmp_p
         ACCOUNT.mail_address,
         ACCOUNT.password,
         sender_addresses=["alias@icloud.com"],
+        default_sender_address="alias@icloud.com",
     )
     envelopes = []
     monkeypatch.setattr(SMTP, "send_message", lambda self, msg, **kw: envelopes.append(kw) or {})

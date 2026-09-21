@@ -49,6 +49,7 @@ class Account:
     sender_addresses: list[str] = field(default_factory=list)
     calendar_ids: list[str] = field(default_factory=list)
     known_sender_addresses: list[str] = field(default_factory=list)
+    default_sender_address: str | None = None
 
 
 def save(account: Account):
@@ -66,6 +67,7 @@ def save(account: Account):
                     "apple_account": account.apple_account,
                     "mail_address": account.mail_address,
                     "sender_addresses": account.sender_addresses,
+                    "default_sender_address": account.default_sender_address,
                     "calendar_ids": account.calendar_ids,
                     "known_sender_addresses": account.known_sender_addresses,
                 },
@@ -103,6 +105,13 @@ def load() -> Account:
         raise AgentError(
             "not_authenticated", "Saved credential is missing. Run icloud-agent auth login."
         )
+    default_sender = data.get("default_sender_address") or next(
+        iter(data["sender_addresses"]), None
+    )
+    if default_sender and default_sender.casefold() not in {
+        address.casefold() for address in data["sender_addresses"]
+    }:
+        raise AgentError("setup_required", "Run icloud-agent auth configure to choose access.")
     return Account(
         data["apple_account"],
         data["mail_address"],
@@ -110,6 +119,7 @@ def load() -> Account:
         data["sender_addresses"],
         data["calendar_ids"],
         data["known_sender_addresses"],
+        default_sender,
     )
 
 

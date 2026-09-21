@@ -54,8 +54,8 @@ For a reply, add `reply_to_id` with the original message's ID and select recipie
 explicitly. The tool adds reply-thread headers; it does not infer recipients or quote
 the original body. `cc` is supported; draft creation has no Bcc input in this release.
 
-Run `icloud-agent mail senders` to list enabled sender addresses. Set `from_address`
-in draft input to choose one; omitting it uses the first enabled address. If no senders
+Run `icloud-agent mail senders` to list enabled sender addresses and the default. Set
+`from_address` in draft input to choose one; omitting it uses the default sender. If no senders
 are enabled, drafting and sending are disabled. Apple validates whether your account
 can send from a configured alias during SMTP submission.
 

@@ -103,7 +103,7 @@ OPERATIONS = {
         Empty,
         lambda account: {
             "addresses": account.sender_addresses,
-            "default": next(iter(account.sender_addresses), None),
+            "default": account.default_sender_address,
         },
         "List locally enabled sender addresses. Aliases are user-configured; Apple validates sending permission during SMTP submission.",
     ),
@@ -126,7 +126,7 @@ OPERATIONS = {
         MailDraft,
         mail.draft,
         "Save a plain-text iCloud draft. Does not send. "
-        "Use an enabled from_address, or omit to use the first enabled sender. "
+        "Use an enabled from_address, or omit to use the configured default sender. "
         "For replies, supply original message ID and explicit recipients.",
         True,
     ),

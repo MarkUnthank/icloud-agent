@@ -182,7 +182,7 @@ def recipients(values: list[str]) -> list[str]:
 
 def enabled_sender(account: Account, address: str | None):
     if address is None:
-        address = next(iter(account.sender_addresses), None)
+        address = account.default_sender_address
     if address is None or address.casefold() not in {
         item.casefold() for item in account.sender_addresses
     }:

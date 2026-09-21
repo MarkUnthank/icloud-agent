@@ -6,6 +6,9 @@ may change between releases. Release artifacts and notes are available on
 
 ## Unreleased
 
+- Clarify the login and primary mailbox prompts, and let an enabled alias be chosen as
+  the default sender independently of the IMAP/SMTP login address.
+
 ## 0.3.0 — 2026-09-21
 
 - Interactive sender/calendar selection with Space and Enter during login and `auth configure`.

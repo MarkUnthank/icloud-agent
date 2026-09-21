@@ -108,6 +108,7 @@ def mock_login(monkeypatch):
     monkeypatch.setattr(auth, "operation_lock", nullcontext)
     monkeypatch.setattr(cli, "check_account", lambda account: [])
     monkeypatch.setattr(terminal, "choose", lambda out, title, choices, selected: selected)
+    monkeypatch.setattr(terminal, "pick_one", lambda out, title, choices, selected: selected)
     saved = []
     monkeypatch.setattr(auth, "save", saved.append)
     return saved
@@ -119,6 +120,8 @@ def test_login_keeps_prompts_on_stderr_and_secret_out_of_output(monkeypatch):
     assert code == 0
     assert json.loads(stdout)["data"]["mail_address"] == "person@icloud.com"
     assert "Your account" in stderr and "Enter a valid email address" in stderr
+    assert "iCloud Login Email Address" in stderr
+    assert "Primary iCloud Mail Address" in stderr
     assert "xxxx-xxxx-xxxx-xxxx" in stderr
     assert "abcd-efgh-ijkl-mnop" not in stdout + stderr
     assert "ordinary-password" not in stdout + stderr

@@ -22,7 +22,8 @@ new calendars stay unchecked. Selecting none enables none.
 
 The app-password connection does not provide a documented sender-alias inventory.
 The primary mail address is offered automatically; users enter additional existing
-aliases once. These are local settings, not a verified list of Apple-owned addresses.
+aliases once and choose a default sender independently of the mailbox login address.
+These are local settings, not a verified list of Apple-owned addresses.
 Apple checks permission during SMTP submission. Setup does not send test messages.
 Aliases can be disabled and re-enabled without retyping them.
 

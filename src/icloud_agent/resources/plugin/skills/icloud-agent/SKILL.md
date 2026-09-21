@@ -24,7 +24,7 @@ an `arguments` object matching the same schema. An `ok:false` result is a failur
 if the MCP transport itself succeeds.
 
 Use `mail_senders` (CLI: `icloud-agent mail senders --json`) to discover enabled From
-addresses. `mail_draft.from_address` selects one; omission uses the first enabled
+addresses. `mail_draft.from_address` selects one; omission uses the configured default
 sender. On `sender_disabled` or `calendar_disabled`, have the user revisit
 `icloud-agent auth configure`; do not change local settings to bypass their selections.
 Sender restrictions do not filter messages in the shared inbox.

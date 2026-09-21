@@ -66,14 +66,17 @@ Run this yourself in a normal terminal:
 icloud-agent auth login
 ```
 
-1. Enter your Apple Account email in the terminal.
-2. Enter the iCloud Mail address you use to sign into IMAP. This may differ from the
-   Apple Account email. Press Enter to use the default.
+1. Enter your iCloud login email address in the terminal.
+2. Enter your primary iCloud Mail address. This is the mailbox address used to sign into
+   IMAP and SMTP; it is not necessarily the address you normally send from. Press Enter
+   to use the login address from step 1.
 3. In the Apple page that opens, go to **Sign-In and Security → App-Specific Passwords**.
 4. Generate a password named `icloud-agent`.
 5. Paste the app-specific password into the hidden prompt.
 6. Add any existing sender aliases, separated by commas, or press Enter to skip.
-7. Choose enabled senders and calendars: **arrow keys** move, **Space** toggles, and
+7. Choose enabled senders, then choose the default sender address. Your default can be
+   an alias even when the primary mailbox address is used for authentication.
+8. Choose enabled calendars: **arrow keys** move, **Space** toggles, and
    **Enter** saves. Calendars start unchecked; choose those you want the agent to access.
    An empty selection enables none. Ctrl-C cancels without saving changes.
 
