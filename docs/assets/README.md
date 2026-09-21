@@ -23,4 +23,3 @@ Generous negative space and margins, strong legibility at GitHub README display 
 ```text
 Edit this GitHub project header. Keep the entire composition, dimensions, dark blue background, cloud/terminal logo, main wordmark "icloud-agent", typography style, and mail/calendar symbols unchanged. Change only the smaller subtitle beneath the main wordmark. Replace "Local tools for iCloud Mail & Calendar" with the exact all-lowercase tagline "the missing agentic icloud connection". Render these exact words, in this order, all lowercase, without punctuation or quotation marks. Keep it as one elegant line aligned with the main wordmark, adjusting the subtitle font size only as needed to fit. Do not change any other text or visual elements.
 ```
-
