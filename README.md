@@ -22,21 +22,17 @@
   <a href="CONTRIBUTING.md">Contribute</a>
 </p>
 
-Give your local agent access to iCloud Mail and Calendar. Search your inbox, prepare a
-reply, or manage your day through a CLI, a companion skill, or 13 MCP tools—all backed
-by the same implementation.
+Give your local agent access to iCloud Mail and Calendar. Search your inbox, draft
+replies, and manage events through a CLI, companion skill, or local MCP connection.
 
-**Runs on your computer. Connect once. Invoke when you need it.** There is no hosted
-backend, public endpoint, subscription to this project, or background daemon. Your
-agent starts a local process and connects directly to Apple over TLS.
+**Runs on your computer. Connect once. Invoke when you need it.**
 
-> **Early release.** Automated tests and local MCP transport are verified. Live iCloud
-> account behavior and ChatGPT desktop integration still need acceptance testing.
-> See the [verification record](VERIFICATION.md) for the precise boundary.
+> **Alpha.** Live iCloud account behavior remains unverified. See the
+> [verification record](VERIFICATION.md) for completed tests and remaining checks.
 
 ## Quick start
 
-Install with [Homebrew](https://brew.sh/) on macOS. No source checkout or manual Python setup:
+Install with [Homebrew](https://brew.sh/) on macOS:
 
 ```sh
 brew install MarkUnthank/tap/icloud-agent
@@ -45,13 +41,13 @@ icloud-agent auth login
 ```
 
 You need an iCloud Mail account, Apple Account two-factor authentication, and Codex
-on PATH for `setup --codex`. Homebrew manages the CLI's runtime and dependencies.
+on PATH for `setup --codex`.
 
-Setup opens Apple's account page. Generate an **app-specific password**, then enter
-it into the hidden terminal prompt. It is saved in your OS credential store and
-reused by the CLI and MCP tools. **Enter it in your terminal, never in chat.**
+Login opens Apple's account page. Generate an **app-specific password** and enter it
+in the hidden terminal prompt. It is saved in your OS credential store for future
+invocations. **Enter it in your terminal, never in chat.**
 
-Restart Codex after installation, then try:
+Restart Codex, then try:
 
 > “Use iCloud Agent to show my unread emails.”
 >
@@ -59,7 +55,7 @@ Restart Codex after installation, then try:
 >
 > “Draft a reply to this email.”
 
-Prefer the terminal?
+Or use the CLI:
 
 ```sh
 icloud-agent mail search
@@ -67,9 +63,7 @@ icloud-agent calendar list
 icloud-agent schema mail_draft
 ```
 
-For another local agent, run `icloud-agent setup` to export the bundled desktop
-plugin, or configure `icloud-agent mcp` directly. See [setup](docs/setup.md) for
-upgrades, removal, and installation with `uv` or `pipx` on other platforms.
+See [setup](docs/setup.md) for `uv`/`pipx` installation, upgrades, and removal.
 
 ## What it can do
 
@@ -77,15 +71,9 @@ upgrades, removal, and installation with `uv` or `pipx` on other platforms.
 |---|---|---|
 | **Mail** | Search/read messages, save drafts, send reviewed drafts, mark read/unread, move to Archive/Trash or another folder | Plain-text drafts; attachment metadata only; one account |
 | **Calendar** | List calendars, find events and recurring occurrences, create/edit/delete personal events | No recurrence editing, invitations, or RSVP management |
-| **Agents** | CLI + skill, local stdio MCP, packaged desktop plugin | Requires a client with local execution; no web/cloud bridge |
 
-Read/search operations leave mail unread. Sending requires the current draft's
-content hash; editing an event requires its current ETag. These checks catch changed
-drafts and concurrent calendar edits before overwriting someone else's work.
-
-A local journal prevents another send attempt for the same draft ID. If SMTP ends
-ambiguously, the tool stops instead of guessing whether it should resend. The result
-distinguishes SMTP acceptance from actual delivery. [Details and examples →](docs/usage.md)
+Reading and searching leave mail unread. See [usage](docs/usage.md) for sending and
+editing workflows.
 
 ## Where it runs
 
@@ -93,22 +81,20 @@ distinguishes SMTP acceptance from actual delivery. [Details and examples →](d
 |---|---|
 | **Codex locally** | `icloud-agent setup --codex` registers MCP and installs the skill |
 | **Other local agents** | Run `icloud-agent mcp` as a stdio subprocess, or invoke the CLI |
-| **ChatGPT desktop local work** | Plugin packaged; actual client/account compatibility needs validation |
-| **ChatGPT web, cloud, mobile** | No local bridge provided |
+| **ChatGPT desktop local work** | Plugin included; client/account compatibility is unverified |
+| **ChatGPT web, cloud, mobile** | Not supported |
 
 Your computer needs to be awake, online, and able to unlock its credential store.
-The agent may keep the MCP child process alive for the session; no system service is
-installed. [Agent and plugin setup →](docs/clients.md)
+[Agent and plugin setup →](docs/clients.md)
 
 ## Your data
 
 - Credentials live in macOS Keychain, Windows Credential Manager, or Linux Secret Service.
-- The project has no telemetry and operates no intermediary server.
-- Account addresses and a minimal send journal are stored locally; inbox bodies are not cached.
-- Data returned to an AI client enters that client's context. **Local tools do not make the model offline.**
+- The connector talks directly to Apple, with no intermediary server or telemetry.
+- Account addresses and a send journal are stored locally; inbox bodies are not cached.
+- Mail and calendar data returned to an AI client enter that client's context.
 
-See [security and privacy](docs/security.md) for storage locations, access boundaries,
-and removal, or [report a vulnerability privately](SECURITY.md).
+Read [security and privacy](docs/security.md), or [report a vulnerability privately](SECURITY.md).
 
 ## Documentation
 
@@ -124,17 +110,15 @@ and removal, or [report a vulnerability privately](SECURITY.md).
 
 ## Contributing
 
-Bug reports, focused improvements, and carefully documented live compatibility
-results are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) to set up development,
-run the checks, and open a pull request. New contributors are welcome; read our
-[community conduct](CODE_OF_CONDUCT.md) and [support guide](SUPPORT.md). Please keep
-account data out of issues.
+Bug reports, improvements, and live compatibility results are welcome. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md), [community conduct](CODE_OF_CONDUCT.md), or the
+[support guide](SUPPORT.md).
 
-Maintained by [Mark Unthank](https://github.com/MarkUnthank). See the
-[changelog](CHANGELOG.md) for changes. This is an independent project, not affiliated
-with or endorsed by Apple or OpenAI. iCloud is a trademark of Apple Inc.
+Maintained by [Mark Unthank](https://github.com/MarkUnthank). [Changelog →](CHANGELOG.md)
 
 ## License
 
-[MIT](LICENSE). The source, skill, and included project artwork may be redistributed
-under this project's license; dependencies retain their respective licenses.
+[MIT](LICENSE), including the source, skill, and project artwork. Dependencies retain
+their own licenses.
+
+Independent project; not affiliated with Apple or OpenAI. iCloud is a trademark of Apple Inc.
