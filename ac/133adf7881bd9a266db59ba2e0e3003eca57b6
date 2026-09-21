@@ -1,0 +1,23 @@
+docs/reference.md
+  s_6fe6e02598edf3::t_9ccdcc13317322 20
+docs/troubleshooting.md
+  s_6fe6e02598edf3::t_65d382ea91eb10 18-22
+scripts/generate_reference.py
+  s_6fe6e02598edf3::t_667d3d2b36d01e 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ac133adf7881bd9a266db59ba2e0e3003eca57b6",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
