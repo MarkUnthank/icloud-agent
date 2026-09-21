@@ -1,0 +1,28 @@
+src/icloud_agent/agent_skills.py
+  s_6fe6e02598edf3::t_258d05f586d6c6 189,193,209
+README.md
+  s_6fe6e02598edf3::t_428ed19cbab0db 47,84
+  s_6fe6e02598edf3::t_258d05f586d6c6 7,64-65,80-81,83,86-88,90-91
+src/icloud_agent/errors.py
+  s_6fe6e02598edf3::t_258d05f586d6c6 40,43,50-51
+CHANGELOG.md
+  s_6fe6e02598edf3::t_258d05f586d6c6 9
+src/icloud_agent/cli.py
+  s_6fe6e02598edf3::t_258d05f586d6c6 30,266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d6c3d8a67574e69be63c43907d3add80296bf27e",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
