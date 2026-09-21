@@ -1,0 +1,81 @@
+CHANGELOG.md
+  s_6fe6e02598edf3::t_f2dc502224a902 9-12
+  s_6fe6e02598edf3::t_4629a522483532 13-14
+docs/usage.md
+  s_6fe6e02598edf3::t_f2dc502224a902 178,180-182,185,188-228,235-246
+  s_6fe6e02598edf3::t_9764e081aac4eb 247
+README.md
+  s_6fe6e02598edf3::t_f2dc502224a902 47,51-53,120-121
+src/icloud_agent/calendar.py
+  s_6fe6e02598edf3::t_1d539147d77efe 222-223,247
+  s_6fe6e02598edf3::t_4629a522483532 157-161,237-238,313-315
+tests/test_stdio.py
+  s_6fe6e02598edf3::t_5e8f332b755f7e 25
+docs/troubleshooting.md
+  s_6fe6e02598edf3::t_0573f0a1548c06 42-45
+docs/setup.md
+  s_6fe6e02598edf3::t_0573f0a1548c06 180
+  s_6fe6e02598edf3::t_c217bcfcf3d389 212-216
+docs/architecture.md
+  s_6fe6e02598edf3::t_f2dc502224a902 36,53-57
+tests/test_access.py
+  s_6fe6e02598edf3::t_5e8f332b755f7e 33
+src/icloud_agent/mcp_server.py
+  s_6fe6e02598edf3::t_1d539147d77efe 15-17,35
+scripts/generate_reference.py
+  s_6fe6e02598edf3::t_f2dc502224a902 94
+tests/test_calendar_drafts.py
+  s_6fe6e02598edf3::t_5e8f332b755f7e 1-310
+  s_6fe6e02598edf3::t_a72e90cceb142b 311-348
+examples/calendar-create.json
+  s_6fe6e02598edf3::t_0573f0a1548c06 1-5
+src/icloud_agent/calendar_drafts.py
+  s_6fe6e02598edf3::t_1d539147d77efe 1-6,8-216
+  s_6fe6e02598edf3::t_3fb1a959557a1c 7
+  s_6fe6e02598edf3::t_5e7fba6bd7a116 217-229
+VERIFICATION.md
+  s_6fe6e02598edf3::t_0573f0a1548c06 21,105-107
+  s_6fe6e02598edf3::t_d703a7e56515ea 11-20
+tests/test_terminal.py
+  s_6fe6e02598edf3::t_f2dc502224a902 161-174,178
+  s_6fe6e02598edf3::t_6b456ba5e9bad4 175-177
+src/icloud_agent/terminal.py
+  s_6fe6e02598edf3::t_f2dc502224a902 175-177
+scripts/check_docs.py
+  s_6fe6e02598edf3::t_0573f0a1548c06 44,48-50,61
+  s_6fe6e02598edf3::t_f2dc502224a902 47
+  s_6fe6e02598edf3::t_be875554c5c3e2 62-63
+src/icloud_agent/resources/plugin/skills/icloud-agent/SKILL.md
+  s_6fe6e02598edf3::t_f2dc502224a902 67,69,72-89
+  s_6fe6e02598edf3::t_7ea45976dd6843 90
+docs/security.md
+  s_6fe6e02598edf3::t_f2dc502224a902 40,48-53,68-70,73-76,89-91,95-97,105-108
+  s_6fe6e02598edf3::t_3fd4919067427b 109
+src/icloud_agent/operations.py
+  s_6fe6e02598edf3::t_1d539147d77efe 8,117,126-141,146-165,187,264-298,301-303
+  s_6fe6e02598edf3::t_3fb1a959557a1c 142-145
+tests/test_core.py
+  s_6fe6e02598edf3::t_5e8f332b755f7e 514,521
+  s_6fe6e02598edf3::t_4629a522483532 458-468,470,515-520
+  s_6fe6e02598edf3::t_81b879cce827fe 469,471,509,522-524
+docs/reference.md
+  s_6fe6e02598edf3::t_0837bf2eb1fe65 44-48,155,157,168-218
+docs/tool-schemas.json
+  s_6fe6e02598edf3::t_25348ad21289e2 369-370,413-629
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b03fac4a1f1cee7d4a8624455438110f99e9a019",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
