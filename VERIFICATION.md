@@ -8,9 +8,9 @@ Tests use synthetic data and protocol doubles for Apple services. A real subproc
 exercises the stdio MCP handshake, tool discovery, and unauthenticated error path.
 The suite requires no Apple Account and performs no live mailbox/calendar writes.
 
-The v0.2.0 local suite has **37 passing tests on macOS / Python 3.14**. The CI
-workflow tests Python 3.11 and 3.14 on Linux and macOS; consult its current run for
-remote results. CI also checks lint/format, generated reference drift, local doc links,
+The v0.2.0 local suite has **37 passing tests on macOS / Python 3.14**. CI tests Python 3.11 and 3.14 on Linux. macOS tests are run locally to avoid
+GitHub-hosted macOS runner charges; the initial release also passed the former macOS CI jobs.
+Consult current CI runs for remote results. CI also checks lint/format, generated reference drift, local doc links,
 example schemas, version consistency, package building, and isolated wheel installation.
 
 Covered behavior:
@@ -41,7 +41,9 @@ macOS. Formula style, strict audit, dependency/source checksum verification, and
 The initial source build took approximately six minutes after dependencies were present.
 The formula applies Homebrew's `ENV.O0` only while building qh3, whose AWS-LC entropy
 implementation requires unoptimized C. Compiler output confirmed `-O0` and the build passed.
-Clean-runner installation checks are tracked in the [tap CI](https://github.com/MarkUnthank/homebrew-tap/actions/workflows/tests.yml).
+The [tap CI](https://github.com/MarkUnthank/homebrew-tap/actions/workflows/tests.yml) validates
+formula syntax on Linux. Full Homebrew installation tests run locally on macOS; no
+GitHub-hosted macOS runner is used. The earlier clean-macOS-runner attempt was cancelled.
 
 ## What is still unverified
 
