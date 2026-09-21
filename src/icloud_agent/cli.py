@@ -119,8 +119,10 @@ def select_access(out, account, available, *, first_login=False):
     else:
         account.calendar_ids = []
         out.print("  No calendars found.", style="muted")
+    senders, calendars = len(account.sender_addresses), len(account.calendar_ids)
     out.print(
-        f"  {len(account.sender_addresses)} senders · {len(account.calendar_ids)} calendars enabled",
+        f"  {senders} sender{'s' if senders != 1 else ''} · "
+        f"{calendars} calendar{'s' if calendars != 1 else ''} enabled",
         style="accent",
     )
 

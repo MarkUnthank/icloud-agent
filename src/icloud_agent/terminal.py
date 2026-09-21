@@ -167,6 +167,7 @@ def choose(out, title, choices, selected):
             [
                 ("qmark", "fg:ansicyan"),
                 ("question", "bold"),
+                ("answer", "fg:ansicyan bold"),
                 ("pointer", "fg:ansicyan bold"),
                 ("highlighted", "fg:ansicyan"),
                 ("selected", "fg:ansicyan"),
