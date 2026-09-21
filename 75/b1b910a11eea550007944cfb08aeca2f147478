@@ -1,0 +1,33 @@
+.github/ISSUE_TEMPLATE/bug_report.yml
+  s_6fe6e02598edf3::t_9699acdfec26fd 4
+.github/ISSUE_TEMPLATE/feature_request.yml
+  s_6fe6e02598edf3::t_c970d590062db3 4
+.github/ISSUE_TEMPLATE/question.yml
+  s_6fe6e02598edf3::t_82e149af5cc93d 1-21
+.github/workflows/test.yml
+  s_6fe6e02598edf3::t_9ec219280becb0 19,52
+CODE_OF_CONDUCT.md
+  s_6fe6e02598edf3::t_a95df264986b71 1-20
+CONTRIBUTING.md
+  s_6fe6e02598edf3::t_77c1bbf6dc2cd6 7-20,70-87
+README.md
+  s_6fe6e02598edf3::t_0936d98940a7b3 129-131
+SUPPORT.md
+  s_6fe6e02598edf3::t_bdbd5803fce5fa 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "75b1b910a11eea550007944cfb08aeca2f147478",
+  "prompts": {},
+  "sessions": {
+    "s_6fe6e02598edf3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c3ad-784d-7a11-ae07-116d60fbdcc2",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Mark Unthank <markunthank@me.com>"
+    }
+  }
+}
