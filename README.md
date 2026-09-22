@@ -4,9 +4,7 @@
 **Read and send iCloud email, draft replies, and manage your calendar from Codex or
 another local AI agent.**
 
-Connect your iCloud account once, choose which sender addresses and calendars your
-agent can use, then ask for what you need. The connector runs on your computer and
-talks directly to Apple.
+Connect once and choose which sender addresses and calendars your agent can use.
 
 <p align="center">
   <img src="docs/assets/header.png" alt="icloud-agent — the missing agentic icloud connection" width="100%">
@@ -46,11 +44,8 @@ talks directly to Apple.
 | **Mail** | Search by text, sender, subject, date, or unread status; read messages; draft and send; mark read/unread; archive or move messages | One account; plain-text drafts; attachment metadata only |
 | **Calendar** | Check your schedule, find recurring occurrences, draft events for review, then confirm creation; edit or delete personal events in enabled calendars | No recurrence editing, invitations, or RSVP management |
 
-Searching and reading leave unread messages unread. Drafting saves a message without
-sending it. When you ask to add an event without naming a calendar, the companion
-skill tells your agent to ask which one to use. New events are saved as local drafts
-for your review and confirmation before creation in iCloud. See [usage](docs/usage.md)
-for the full workflows.
+Reading preserves each message's read/unread status. Drafts are saved until you send them.
+Calendar drafts stay local until you review and confirm them.
 
 ## Will it work with my agent?
 
@@ -67,9 +62,8 @@ process on your computer.
 Your computer needs to be awake, online, and able to unlock its credential store.
 [Agent and plugin setup →](docs/clients.md)
 
-> **Beta.** App-password discovery has live evidence; draft and send checks have been
-> reported by a user. Calendar writes, recipient delivery, and client compatibility
-> need further verification. See the [verification record](VERIFICATION.md).
+Live calendar writes and recipient delivery remain unverified.
+[Verification record →](VERIFICATION.md)
 
 ## Quick start
 
@@ -84,24 +78,18 @@ icloud-agent auth login
 You need an iCloud Mail account, Apple Account two-factor authentication, and Codex
 on PATH for `setup --codex`.
 
-Login opens Apple's sign-in page, where you generate an **app-specific password**.
-Paste it into the terminal's masked prompt; the CLI saves it in your OS credential
-store for future use. **Never enter passwords in chat.**
+Generate an **app-specific password** when login opens Apple's sign-in page, then
+paste it into the terminal's masked prompt.
 
-Addresses and calendars load from iCloud automatically. Choose enabled senders and
-calendars with **Space** and **Enter**. Your default sender can be an alias different
-from your login email. If an address is missing, choose **Add another address…**.
-**Sender name** is prefilled from iCloud when available; keep it or edit it to choose
-the name recipients see. Change these settings later with `icloud-agent auth configure`.
+Choose sender addresses and calendars with **Space** and **Enter**. Your default
+sender can be an alias. Confirm or edit the **Sender name** recipients will see.
 
-Once connected, choose **Install agent skills** or **Finish**. Skill installation
-includes the shared skill for Codex and other compatible agents, with optional links
-for agents such as Claude Code and Windsurf. Extras start unchecked, with a live
-selection count at the top. Press **Space** to toggle them, or **Enter** with zero
-selected to skip extras and install only the shared skill.
+Once connected, choose **Install agent skills** or **Finish**. If installing, select
+any additional agents, or press **Enter** with none selected to install just the
+shared skill. Restart your agent after setup.
 
-You can install or update skills later with `icloud-agent setup --skills`.
-Restart your agent after setup, then try one of the requests above.
+Change your account settings with `icloud-agent auth configure`; install or update
+skills with `icloud-agent setup --skills`.
 
 Or use the CLI directly:
 

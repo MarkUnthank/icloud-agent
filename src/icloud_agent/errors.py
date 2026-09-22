@@ -37,20 +37,18 @@ def error_result(exc: Exception, *, operation: str | None = None, write: bool = 
                 )
             elif operation == "mail_search" and error.get("stage") in ("search", "fetch_headers"):
                 error["recovery"] = (
-                    "Narrow the date range or use sender/subject filters, then retry. This failed search does not establish that there are no matches."
+                    "Narrow the date range or use sender/subject filters, then retry."
                 )
             else:
-                error["recovery"] = (
-                    "Check connectivity, then retry. A timeout does not establish that authentication failed."
-                )
+                error["recovery"] = "Check connectivity, then retry."
         return {"ok": False, "error": error}
     # Protocol libraries can embed message contents, URLs, and credentials in exceptions.
     return {
         "ok": False,
         "error": {
             "code": "operation_failed",
-            "message": "Operation failed. Check connectivity and run icloud-agent auth status --check. "
-            "If this was a write, read back its state before retrying.",
+            "message": "Check connectivity and run icloud-agent auth status --check."
+            + (" Read back the affected item before retrying this write." if write else ""),
             "type": type(exc).__name__,
             **context,
         },

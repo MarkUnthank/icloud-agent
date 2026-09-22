@@ -27,8 +27,7 @@ def login(no_browser=False):
     if not sys.stdin.isatty():
         raise AgentError(
             "interactive_login_required",
-            "Run icloud-agent auth login directly in your terminal. "
-            "Passwords are never accepted as arguments or through chat.",
+            "Run icloud-agent auth login in your terminal.",
         )
     out = terminal.console(stderr=True)
     terminal.heading(out, "connect")
@@ -84,7 +83,6 @@ def select_access(out, account, available, *, first_login=False):
     out.print()
     terminal.section(out, "3" if first_login else "1", "Sender addresses")
     discovered = available["addresses"]
-    out.print("  Choose addresses you use with iCloud Mail.", style="muted")
     out.print("  The agent can read the shared inbox for all aliases.\n", style="muted")
     known = list(
         dict.fromkeys(
@@ -265,7 +263,7 @@ def parser():
     setup_parser.add_argument(
         "--copy", action="store_true", help="Copy agent skills instead of linking them."
     )
-    commands.add_parser("mcp", help="Run local stdio MCP; no port, tunnel, or background daemon.")
+    commands.add_parser("mcp", help="Run local MCP tools over stdio.")
     schema = commands.add_parser(
         "schema", help="Show operations or one operation's JSON input schema."
     )

@@ -132,7 +132,6 @@ def connected(out, email):
     content = Text.assemble(
         ("✓  Connected to iCloud", "success_bold"),
         ("\n\n" + literal(email)),
-        ("\nMail and Calendar are ready.", "muted"),
     )
     out.print()
     out.print(
