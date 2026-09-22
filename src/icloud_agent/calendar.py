@@ -3,7 +3,6 @@ import json
 from contextlib import contextmanager
 from datetime import UTC, date, datetime
 from urllib.parse import unquote, urljoin, urlsplit
-from uuid import uuid4
 
 import caldav
 from icalendar import Calendar, Event
@@ -155,6 +154,11 @@ def validate_range(start, end):
         )
 
 
+def ical_time(value):
+    # Fixed offsets are not IANA TZIDs. UTC serialization preserves the reviewed instant.
+    return value.astimezone(UTC) if isinstance(value, datetime) else value
+
+
 def serialize_event(component):
     result = {
         "uid": str(component.get("UID", "")),
@@ -215,9 +219,8 @@ def search(account: Account, calendar_id: str, start: str, end: str, limit: int 
         }
 
 
-def create(
-    account: Account,
-    calendar_id: str,
+def event_document(
+    uid: str,
     title: str,
     start: str,
     end: str,
@@ -226,14 +229,13 @@ def create(
 ):
     start_at, end_at = parse_time(start), parse_time(end)
     validate_range(start_at, end_at)
-    uid = str(uuid4())
     component = Event()
     for key, value in {
         "UID": uid,
         "DTSTAMP": datetime.now(UTC),
         "SUMMARY": title,
-        "DTSTART": start_at,
-        "DTEND": end_at,
+        "DTSTART": ical_time(start_at),
+        "DTEND": ical_time(end_at),
         "DESCRIPTION": description,
         "LOCATION": location,
     }.items():
@@ -242,16 +244,7 @@ def create(
     doc.add("PRODID", "-//icloud-agent//EN")
     doc.add("VERSION", "2.0")
     doc.add_component(component)
-    with connection(account) as c:
-        calendar = resolve_calendar(c, calendar_id)
-        url = str(calendar.url).rstrip("/") + "/" + uid + ".ics"
-        response = c.put(
-            url,
-            doc.to_ical().decode(),
-            headers={"If-None-Match": "*", "Content-Type": "text/calendar; charset=utf-8"},
-        )
-        check_write(response, (201, 204))
-        return write_readback(c, calendar_id, url, "created")
+    return doc.to_ical().decode()
 
 
 def check_write(response, expected):
@@ -317,7 +310,9 @@ def update(
         }.items():
             if value is not None:
                 component.pop(key, None)
-                component.add(key, parse_time(value) if key in ("DTSTART", "DTEND") else value)
+                component.add(
+                    key, ical_time(parse_time(value)) if key in ("DTSTART", "DTEND") else value
+                )
         if "DTEND" not in component:
             raise AgentError("invalid_time", "Provide an explicit end time for this event.")
         validate_range(component["DTSTART"].dt, component["DTEND"].dt)

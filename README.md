@@ -42,9 +42,10 @@ Connect once and choose which sender addresses and calendars your agent can use.
 | | What you can do | Current limits |
 |---|---|---|
 | **Mail** | Search by text, sender, subject, date, or unread status; read messages; draft and send; mark read/unread; archive or move messages | One account; plain-text drafts; attachment metadata only |
-| **Calendar** | Check your schedule, find recurring occurrences, and create, edit, or delete personal events in enabled calendars | No recurrence editing, invitations, or RSVP management |
+| **Calendar** | Check your schedule, find recurring occurrences, draft events for review, then confirm creation; edit or delete personal events in enabled calendars | No recurrence editing, invitations, or RSVP management |
 
 Reading preserves each message's read/unread status. Drafts are saved until you send them.
+Calendar drafts stay local until you review and confirm them.
 
 ## Will it work with my agent?
 
@@ -104,7 +105,8 @@ See [setup](docs/setup.md) for `uv`/`pipx` installation, upgrades, and removal.
 
 - Credentials live in macOS Keychain, Windows Credential Manager, or Linux Secret Service.
 - The connector talks directly to Apple, with no intermediary server or telemetry.
-- Account addresses and a send journal are stored locally; inbox bodies are not cached.
+- Account addresses, calendar drafts, and write-attempt records are stored locally;
+  inbox bodies are not cached.
 - Mail and calendar data returned to an AI client enter that client's context.
 
 Read [security and privacy](docs/security.md), or [report a vulnerability privately](SECURITY.md).

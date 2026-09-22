@@ -366,8 +366,8 @@
       "type": "object"
     }
   },
-  "calendar_create": {
-    "description": "Create a standalone personal event. Timed values require UTC offsets. All-day end dates are exclusive.",
+  "calendar_draft": {
+    "description": "Prepare a local draft of a standalone personal event. Reads the destination calendar name but creates nothing in iCloud. Timed values require UTC offsets; all-day end dates are exclusive. Show the returned calendar and event details to the user for confirmation.",
     "write": true,
     "destructive": false,
     "input_schema": {
@@ -409,6 +409,223 @@
         "title",
         "start",
         "end"
+      ],
+      "title": "CalendarDraft",
+      "type": "object"
+    }
+  },
+  "calendar_drafts": {
+    "description": "List this account's local calendar drafts and creation attempts, newest first.",
+    "write": false,
+    "destructive": false,
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "default": 20,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Pagination cursor from next_before.",
+          "title": "Before"
+        }
+      },
+      "title": "CalendarDrafts",
+      "type": "object"
+    }
+  },
+  "calendar_read_draft": {
+    "description": "Read a local calendar draft, its status, and its review hash. Does not contact iCloud.",
+    "write": false,
+    "destructive": false,
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "draft_id": {
+          "pattern": "^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
+          "title": "Draft Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "draft_id"
+      ],
+      "title": "CalendarReadDraft",
+      "type": "object"
+    }
+  },
+  "calendar_update_draft": {
+    "description": "Revise a pending local calendar draft using its last-read hash. Creates nothing in iCloud. Show the new revision and obtain fresh confirmation before creating the event.",
+    "write": true,
+    "destructive": false,
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "draft_id": {
+          "pattern": "^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
+          "title": "Draft Id",
+          "type": "string"
+        },
+        "expected_sha256": {
+          "description": "sha256 of the draft revision reviewed by the user.",
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Expected Sha256",
+          "type": "string"
+        },
+        "calendar_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Calendar Id"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 100000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Location"
+        }
+      },
+      "required": [
+        "draft_id",
+        "expected_sha256"
+      ],
+      "title": "CalendarUpdateDraft",
+      "type": "object"
+    }
+  },
+  "calendar_discard_draft": {
+    "description": "Discard a pending local calendar draft using its last-read hash. Does not delete an iCloud event. Creation-attempt records cannot be discarded.",
+    "write": true,
+    "destructive": true,
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "draft_id": {
+          "pattern": "^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
+          "title": "Draft Id",
+          "type": "string"
+        },
+        "expected_sha256": {
+          "description": "sha256 of the draft revision reviewed by the user.",
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Expected Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "draft_id",
+        "expected_sha256"
+      ],
+      "title": "CalendarReviewedDraft",
+      "type": "object"
+    }
+  },
+  "calendar_create": {
+    "description": "Create the exact local calendar draft confirmed by the user. Requires draft_id, its reviewed sha256, and confirmed:true. Never call before showing the proposal and receiving confirmation. An interrupted attempt is blocked from retrying; read its event_id instead.",
+    "write": true,
+    "destructive": false,
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "draft_id": {
+          "pattern": "^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
+          "title": "Draft Id",
+          "type": "string"
+        },
+        "expected_sha256": {
+          "description": "sha256 of the draft revision reviewed by the user.",
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Expected Sha256",
+          "type": "string"
+        },
+        "confirmed": {
+          "const": true,
+          "description": "Set true only after the user confirms this exact draft revision.",
+          "title": "Confirmed",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "draft_id",
+        "expected_sha256",
+        "confirmed"
       ],
       "title": "CalendarCreate",
       "type": "object"

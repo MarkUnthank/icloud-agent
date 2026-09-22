@@ -455,6 +455,20 @@ def test_calendar_concurrent_write_rejected(calendar_transport):
     assert str(client.doc.walk("VEVENT")[0]["SUMMARY"]) == "Before"
 
 
+def test_calendar_edit_preserves_offset_instants(calendar_transport):
+    client, ref = calendar_transport
+    calendar.update(
+        ACCOUNT,
+        ref,
+        '"first"',
+        start="2026-10-01T10:00:00+02:00",
+        end="2026-10-01T11:00:00+02:00",
+    )
+    event = Calendar.from_ical(client.doc.to_ical()).walk("VEVENT")[0]
+    assert event["DTSTART"].dt == datetime(2026, 10, 1, 8, tzinfo=UTC)
+    assert event["DTEND"].dt == datetime(2026, 10, 1, 9, tzinfo=UTC)
+
+
 def test_recurring_edit_rejected_and_delete_needs_scope(calendar_transport):
     client, ref = calendar_transport
     client.doc.walk("VEVENT")[0].add("RRULE", {"FREQ": "DAILY"})
@@ -492,11 +506,22 @@ def test_mcp_schemas_and_safe_dry_call():
     async def check():
         server = build_server()
         tools = await server.list_tools()
-        assert len(tools) == len(operations.OPERATIONS) == 14
+        assert len(tools) == len(operations.OPERATIONS) == 19
         by_name = {x.name: x for x in tools}
         assert by_name["mail_read"].annotations.readOnlyHint
         assert not by_name["mail_send_draft"].annotations.readOnlyHint
         assert by_name["calendar_delete"].annotations.destructiveHint
+        assert by_name["calendar_read_draft"].annotations.readOnlyHint
+        assert not by_name["calendar_read_draft"].annotations.openWorldHint
+        assert not by_name["calendar_discard_draft"].annotations.openWorldHint
+        assert not by_name["calendar_create"].annotations.readOnlyHint
+        schema = by_name["calendar_create"].inputSchema
+        reference = schema["properties"]["arguments"]["$ref"].rsplit("/", 1)[1]
+        assert schema["$defs"][reference]["required"] == [
+            "draft_id",
+            "expected_sha256",
+            "confirmed",
+        ]
         assert "arguments" in by_name["mail_send_draft"].inputSchema["properties"]
 
     asyncio.run(check())

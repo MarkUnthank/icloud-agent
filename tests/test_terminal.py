@@ -158,6 +158,24 @@ def test_external_content_is_literal_and_cannot_control_terminal():
     assert terminal.literal("Café ☁\nsecond\tcolumn") == "Café ☁\nsecond\tcolumn"
 
 
+def test_uncertain_calendar_creation_shows_recovery_ids():
+    output = io.StringIO()
+    terminal.result(
+        Console(file=output, no_color=True, width=90, theme=terminal.THEME),
+        {
+            "ok": False,
+            "error": {
+                "code": "calendar_create_unconfirmed",
+                "message": "Read the event before taking further action.",
+                "draft_id": "draft-123",
+                "event_id": "event-456",
+            },
+        },
+        SimpleNamespace(),
+    )
+    assert "draft-123" in output.getvalue() and "event-456" in output.getvalue()
+
+
 def mock_login(monkeypatch):
     monkeypatch.setattr(
         cli.webbrowser, "open", lambda url: pytest.fail("Unexpected browser launch")

@@ -64,10 +64,29 @@ its current `sha256` as `expected_sha256` to `mail_send_draft`. Supply explicit 
 Never automatically retry partial or uncertain sends, or bypass the send journal.
 Archive or trash with `mail_move` and the corresponding discovered folder.
 
-Before creating an event, establish which calendar the user wants. If they have not
+Before drafting an event, establish which calendar the user wants. If they have not
 specified one for the request, use `calendar_list` to list enabled calendars, ask them
-to choose, and wait for their answer before calling `calendar_create`. Do not infer
+to choose, and wait for their answer before calling `calendar_draft`. Do not infer
 the destination from list order, the event's content, or a previous event.
+
+Create a local proposal with `calendar_draft`. Show its calendar name, title, start/end
+with UTC offsets (or all-day dates and exclusive end), location, and description to the
+user. Wait for explicit confirmation of those details before calling `calendar_create`
+with `draft_id`, the reviewed `sha256` as `expected_sha256`, and `confirmed:true`.
+The original request to add an event authorizes preparing the proposal, not confirming
+unseen details. Tool arguments record confirmation; they do not collect it from the user.
+
+Use `calendar_read_draft` to resume review, `calendar_update_draft` to revise, and
+`calendar_discard_draft` to discard a pending proposal. Updates/discards require the
+current hash. Every revision requires fresh review and confirmation. `calendar_drafts`
+lists the current account's local drafts and attempts; paginate with `next_before`.
+These drafts are local and do not appear in iCloud until confirmed creation.
+
+On `calendar_create_unconfirmed`, read the returned `event_id` with `calendar_read`.
+Do not repeat creation, discard the attempt record, or make a replacement draft to
+bypass it. A repeated completed creation returns the saved result without another
+write. If readback is still uncertain, report that uncertainty and let the user decide
+the next action after checking their calendar.
 
 Resolve dates and timezone before using ISO timestamps with offsets. All-day end dates
 are exclusive. Read events before editing or deleting; pass the ETag. On conflict,
